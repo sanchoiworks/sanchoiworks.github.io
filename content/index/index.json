@@ -1,0 +1,166 @@
+{
+    "categories": [
+        {
+            "id": "space",
+            "items": [
+                {
+                    "id": "space-1",
+                    "title": "Space Project 1",
+                    "image": "/images/1.jpg",
+                    "detailImages": [
+                        {
+                            "image": "/images/1.jpg"
+                        },
+                        {
+                            "image": "/images/2.jpg"
+                        },
+                        {
+                            "image": "/images/3.jpg"
+                        }
+                    ]
+                },
+                {
+                    "id": "space-2",
+                    "title": "Space Project 2",
+                    "image": "/images/2.jpg",
+                    "detailImages": [
+                        {
+                            "image": "/images/2.jpg"
+                        },
+                        {
+                            "image": "/images/3.jpg"
+                        },
+                        {
+                            "image": "/images/4.jpg"
+                        }
+                    ]
+                },
+                {
+                    "id": "space-3",
+                    "title": "Space Project 3",
+                    "image": "/images/3.jpg",
+                    "detailImages": [
+                        {
+                            "image": "/images/3.jpg"
+                        },
+                        {
+                            "image": "/images/4.jpg"
+                        },
+                        {
+                            "image": "/images/1.jpg"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "brand",
+            "items": [
+                {
+                    "id": "brand-1",
+                    "title": "Brand Project 1",
+                    "image": "/images/3.jpg",
+                    "detailImages": [
+                        {
+                            "image": "/images/3.jpg"
+                        },
+                        {
+                            "image": "/images/4.jpg"
+                        }
+                    ]
+                },
+                {
+                    "id": "brand-2",
+                    "title": "Brand Project 2",
+                    "image": "/images/4.jpg",
+                    "detailImages": [
+                        {
+                            "image": "/images/4.jpg"
+                        },
+                        {
+                            "image": "/images/1.jpg"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "object",
+            "items": [
+                {
+                    "id": "object-1",
+                    "title": "Object Project 1",
+                    "image": "/images/object/object1.jpg",
+                    "detailImages": [
+                        {
+                            "image": "/images/object/object1.jpg"
+                        },
+                        {
+                            "image": "/images/object/object2.jpg"
+                        }
+                    ]
+                },
+                {
+                    "id": "object-2",
+                    "title": "Object Project 2",
+                    "image": "/images/object/object2.jpg",
+                    "detailImages": [
+                        {
+                            "image": "/images/object/object2.jpg"
+                        },
+                        {
+                            "image": "/images/object/object1.jpg"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "figure",
+            "items": [
+                {
+                    "id": "figure-1",
+                    "title": "Figure Project 1",
+                    "image": "/images/figure/figure1.jpg",
+                    "detailImages": [
+                        {
+                            "image": "/images/figure/figure1.jpg"
+                        },
+                        {
+                            "image": "/images/figure/figure2.jpg"
+                        }
+                    ]
+                },
+                {
+                    "id": "figure-2",
+                    "title": "Figure Project 2",
+                    "image": "/images/figure/figure2.jpg",
+                    "detailImages": [
+                        {
+                            "image": "/images/figure/figure2.jpg"
+                        },
+                        {
+                            "image": "/images/figure/figure1.jpg"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "personal",
+            "items": []
+        },
+        {
+            "id": "exhibition",
+            "items": []
+        },
+        {
+            "id": "letter",
+            "items": []
+        },
+        {
+            "id": "frames",
+            "items": []
+        }
+    ]
+} 

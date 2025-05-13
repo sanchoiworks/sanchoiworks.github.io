@@ -1,0 +1,55 @@
+backend:
+  name: test-repo
+  branch: main
+
+media_folder: "images"
+public_folder: "/images"
+
+collections:
+  - name: "main"
+    label: "Main"
+    folder: "content/main"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - {label: "Title", name: "title", widget: "string"}
+      - {label: "Image", name: "image", widget: "image"}
+      - {label: "Description", name: "description", widget: "text"}
+      - label: "Detail Images"
+        name: "detailImages"
+        widget: "list"
+        fields:
+          - {label: "Image", name: "image", widget: "image"}
+
+  - name: "index"
+    label: "Index"
+    folder: "content/index"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - label: "ID"
+        name: "id"
+        widget: "select"
+        options: ["space", "brand", "object", "figure", "personal", "exhibition", "letter", "frames"]
+      - label: "Items"
+        name: "items"
+        widget: "list"
+        fields:
+          - {label: "Title", name: "title", widget: "string"}
+          - {label: "Image", name: "image", widget: "image"}
+          - label: "Detail Images"
+            name: "detailImages"
+            widget: "list"
+            fields:
+              - {label: "Image", name: "image", widget: "image"}
+
+  - name: "about"
+    label: "About"
+    files:
+      - file: "content/about.yml"
+        label: "About Information"
+        name: "about"
+        fields:
+          - {label: "Email", name: "email", widget: "string"}
+          - {label: "Instagram", name: "instagram", widget: "string"}
+          - {label: "Location", name: "location", widget: "string"}
