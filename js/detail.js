@@ -1,171 +1,269 @@
-import { loadGalleryData, loadCategoriesData } from './data.js';
+import { loadCategoriesData, loadMainData, loadProjectsData } from './data.js';
 
-let galleryItems = [];
-let categories = [];
+let swiper = null;
+let projectItem = null;
 
 async function initializeDetailPage() {
     try {
-        // URL 파라미터에서 ID 가져오기
         const urlParams = new URLSearchParams(window.location.search);
-        const param = urlParams.get('index');
-        console.log('URL Parameters:', {
-            fullUrl: window.location.href,
-            search: window.location.search,
-            param: param,
-            paramType: typeof param
-        });
-        
-        // 데이터 로드
-        galleryItems = await loadGalleryData();
-        categories = await loadCategoriesData();
-        
-        console.log('Loaded data:', {
-            galleryItems: galleryItems,
-            categories: categories,
-            galleryItemsLength: galleryItems?.items?.length,
-            categoriesLength: categories?.length
-        });
-        
-        if (!galleryItems || !galleryItems.items || !Array.isArray(galleryItems.items) || galleryItems.items.length === 0) {
-            console.error('Invalid gallery data structure or empty items');
-            return;
-        }
-        
-        if (!categories || !Array.isArray(categories) || categories.length === 0) {
-            console.error('Invalid categories data structure or empty categories');
-            return;
-        }
-        
-        // 프로젝트 아이템 찾기
-        let projectItem = null;
-        
-        // ID로 검색 (문자열 또는 숫자)
-        if (param) {
-            console.log('Searching for item with ID:', param);
-            
-            // gallery.json에서 검색
-            projectItem = galleryItems.items.find(item => {
-                console.log('Checking item:', item);
-                // 숫자 ID인 경우
-                if (typeof item.id === 'number') {
-                    const match = item.id.toString() === param;
-                    console.log('Numeric ID match:', match);
-                    return match;
+        const title = urlParams.get('title');
+        const id = urlParams.get('id');
+        const source = urlParams.get('source');
+
+        console.log('Detail page params:', { title, id, source });
+
+        let project = null;
+
+        // source에 따라 다른 API를 사용하여 데이터 로드
+        if (source === 'main') {
+            const mainData = await loadMainData();
+            project = mainData.find(item => {
+                if (id) {
+                    return item.projectID === parseInt(id);
                 }
-                // 문자열 ID인 경우
-                const match = item.id === param;
-                console.log('String ID match:', match);
-                return match;
+                return item.title === title;
             });
-            
-            console.log('Found in gallery:', projectItem);
-            
-            // gallery.json에서 찾지 못한 경우 categories.json에서 검색
-            if (!projectItem) {
-                console.log('Searching in categories...');
-                for (const category of categories) {
-                    if (category.items && Array.isArray(category.items)) {
-                        const foundItem = category.items.find(item => {
-                            console.log('Checking category item:', item);
-                            // 숫자 ID인 경우
-                            if (typeof item.id === 'number') {
-                                const match = item.id.toString() === param;
-                                console.log('Numeric ID match:', match);
-                                return match;
-                            }
-                            // 문자열 ID인 경우
-                            const match = item.id === param;
-                            console.log('String ID match:', match);
-                            return match;
-                        });
-                        if (foundItem) {
-                            projectItem = foundItem;
-                            console.log('Found in categories:', projectItem);
-                            break;
-                        }
-                    }
+        } else {
+            // list 페이지에서 온 경우
+            const projects = await loadProjectsData();
+            console.log('Loaded projects:', projects);
+            project = projects.find(p => {
+                if (id) {
+                    return p.id === parseInt(id);
                 }
-            }
+                return p.title === title || p.name === title;
+            });
         }
-        
-        if (!projectItem) {
-            console.error('Project item not found for parameter:', param);
+
+        if (!project) {
+            console.error('Project item not found');
             return;
         }
-        
-        // 스와이퍼 슬라이드 생성
-        const swiperWrapper = document.querySelector('.swiper-wrapper');
-        if (!projectItem.detailImages || !Array.isArray(projectItem.detailImages)) {
-            console.error('No detail images found for project:', projectItem.title);
+
+        projectItem = project; // 전역 변수에 저장
+        console.log('Found project item:', project);
+
+        // 섹션 데이터
+        const sections = project.sections || [];
+        if (sections.length === 0) {
+            console.error('No sections found in project item');
             return;
         }
-        
-        swiperWrapper.innerHTML = projectItem.detailImages.map(image => {
-            if (image.text && !image.imageUrl) {
-                return `
-                    <div class="swiper-slide text-only">
-                        <div class="slide-text-content">${image.text}</div>
-                    </div>
-                `;
-            }
-            return `
-                <div class="swiper-slide">
-                    <img src="${image.imageUrl}" alt="${projectItem.title}">
-                    ${image.text ? `<div class="slide-text">${image.text}</div>` : ''}
-                </div>
-            `;
-        }).join('');
-        
-        // Swiper 초기화
-        const swiper = new Swiper('.detail-swiper', {
-            direction: 'horizontal',
-            mousewheel: {
-                sensitivity: 1.5,
-                thresholdDelta: 10,
-                thresholdTime: 100
-            },
-            speed: 400,
-            effect: 'fade',
-            preventClicks: false,
-            slideToClickedSlide: false,
-            fadeEffect: {
-                crossFade: true
-            },
-            on: {
-                slideChange: function () {
-                    updateInfo(this.activeIndex, projectItem);
-                }
-            }
-        });
-        
-        // 초기 정보 업데이트
-        updateInfo(0, projectItem);
-        
-        // 클릭 이벤트
-        document.querySelector('.click-prev').addEventListener('click', () => {
-            swiper.slidePrev();
-        });
-        
-        document.querySelector('.click-next').addEventListener('click', () => {
-            swiper.slideNext();
-        });
-        
+
+        // swiper 초기화 (이미지 프리로드 및 슬라이드 생성 포함)
+        await initializeSwiper(sections);
+
+        // 섹션 탭 생성
+        createSectionTabs(sections);
+
+        // 팝업 텍스트 설정
+        if (project.popupText) {
+            setupPopupText(project.popupText);
+        }
+
+        // 프로젝트 제목 설정
+        const imageTitle = document.querySelector('.image-title');
+        if (imageTitle) {
+            imageTitle.textContent = project.title || project.name || '';
+        }
+
     } catch (error) {
         console.error('Error initializing detail page:', error);
     }
 }
 
-function updateInfo(slideIndex, itemData) {
-    const current = document.querySelector('.current');
-    const total = document.querySelector('.total');
+async function initializeSwiper(sections) {
+    const swiperWrapper = document.querySelector('.swiper-wrapper');
+    swiperWrapper.innerHTML = '';
+
+    // 모든 이미지 주소를 배열로 수집
+    const allImages = sections.flatMap(section => section.images || []);
+
+    console.log('All images to be loaded:', allImages);
+
+    // 이미지 프리로드
+    await Promise.all(allImages.map(src => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve();
+            img.onerror = () => {
+                console.error('Failed to load image:', src);
+                resolve();
+            };
+            img.src = src;
+        });
+    }));
+
+    // 슬라이드 DOM 생성
+    allImages.forEach((image, index) => {
+        const slide = document.createElement('div');
+        slide.className = 'swiper-slide';
+
+        const img = document.createElement('img');
+        img.src = image;
+        img.alt = `Slide ${index + 1}`;
+        img.loading = 'lazy';
+
+        slide.appendChild(img);
+        swiperWrapper.appendChild(slide);
+    });
+
+    // 총 슬라이드 수 (원본 개수)
+    const totalSlides = allImages.length;
+
+    // Swiper 초기화
+    swiper = new Swiper('.detail-swiper', {
+        slidesPerView: 1,
+        spaceBetween: 0,
+        loop: true,
+        speed: 400,
+        preloadImages: false,
+        lazy: {
+            loadPrevNext: true,
+            loadPrevNextAmount: 2
+        },
+        watchSlidesProgress: true,
+        on: {
+            init: function() {
+                // DOM 렌더링 후 updateSlideCounter 호출
+                requestAnimationFrame(() => {
+                    updateSlideCounter(totalSlides);
+                    updateActiveTab(getCurrentSectionIndex());
+                });
+            },
+            slideChange: function() {
+                updateSlideCounter(totalSlides);
+                updateActiveTab(getCurrentSectionIndex());
+            }
+        }
+    });
+
+    // 좌우 클릭 영역 이벤트 바인딩
+    const clickPrev = document.querySelector('.click-prev');
+    const clickNext = document.querySelector('.click-next');
+
+    if (clickPrev) clickPrev.addEventListener('click', () => swiper.slidePrev());
+    if (clickNext) clickNext.addEventListener('click', () => swiper.slideNext());
+}
+
+// 현재 슬라이드가 속한 섹션 인덱스 계산 (realIndex 기준)
+function getCurrentSectionIndex() {
+    if (!swiper || !projectItem || !projectItem.sections) return 0;
+
+    const currentIndex = swiper.realIndex;
+    let totalImages = 0;
+
+    for (let i = 0; i < projectItem.sections.length; i++) {
+        const section = projectItem.sections[i];
+        if (!section.images) continue;
+
+        const sectionImageCount = section.images.length;
+
+        if (currentIndex < totalImages + sectionImageCount) {
+            return i;
+        }
+        totalImages += sectionImageCount;
+    }
+
+    return 0;
+}
+
+// 특정 섹션 시작 슬라이드 index 계산 (전체 슬라이드 중에서)
+function getStartIndexForSection(sections, sectionIndex) {
+    let index = 0;
+    for (let i = 0; i < sectionIndex; i++) {
+        if (!sections[i].images) continue;
+        index += sections[i].images.length;
+    }
+    return index;
+}
+
+function createSectionTabs(sections) {
+    const tabsContainer = document.querySelector('.date-tabs');
+    tabsContainer.innerHTML = '';
+    if (sections.length < 2) {
+        tabsContainer.style.display = 'none';
+        return;
+    } else {
+        tabsContainer.style.display = 'flex';
+    }
+    sections.forEach((section, index) => {
+        const tab = document.createElement('button');
+        tab.className = 'date-tab';
+        tab.textContent = section.sectionTitle;
+        tab.addEventListener('click', () => {
+            const startIndex = getStartIndexForSection(sections, index);
+            swiper.slideToLoop(startIndex); // loop 모드에 맞는 슬라이드 이동 함수 사용
+        });
+        tabsContainer.appendChild(tab);
+    });
+    updateActiveTab(0);
+}
+
+function updateActiveTab(sectionIndex) {
+    document.querySelectorAll('.date-tab').forEach((tab, index) => {
+        tab.classList.toggle('active', index === sectionIndex);
+    });
+}
+
+// 슬라이드 카운터 업데이트
+function updateSlideCounter(totalSlides) {
+    const current = document.querySelector('.slide-counter .current');
+    const total = document.querySelector('.slide-counter .total');
     const imageTitle = document.querySelector('.image-title');
-    
-    if (current && total && imageTitle) {
-        current.textContent = slideIndex + 1;
-        total.textContent = itemData.detailImages.length;
-        imageTitle.textContent = itemData.title;
+
+    // 요소가 없으면 100ms 뒤 재시도
+    if (!current || !total || !imageTitle) {
+        setTimeout(() => updateSlideCounter(totalSlides), 100);
+        return;
+    }
+
+    if (!swiper || !swiper.initialized) return;
+
+    let realIndex = swiper.realIndex;
+    if (realIndex < 0) realIndex = 0;
+
+    current.textContent = realIndex + 1;
+    total.textContent = totalSlides;
+
+    imageTitle.textContent = projectItem ? projectItem.title : '';
+
+    // 디버깅 로그
+    console.log(`Slide counter updated: current = ${realIndex + 1}, total = ${totalSlides}`);
+}
+
+function setupPopupText(text) {
+    if (!text) return;
+
+    const modal = document.createElement('div');
+    modal.id = 'detail-text-modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close-modal">Close</span>
+            <div class="modal-text"></div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    const modalText = modal.querySelector('.modal-text');
+    const closeBtn = modal.querySelector('.close-modal');
+    const imageTitle = document.querySelector('.image-title');
+
+    modalText.innerHTML = text;
+
+    closeBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    if (imageTitle) {
+        imageTitle.style.cursor = 'pointer';
+        imageTitle.addEventListener('click', () => {
+            modal.style.display = 'block';
+        });
     }
 }
 
 // 페이지 로드 시 초기화
-document.addEventListener('DOMContentLoaded', initializeDetailPage);
+document.addEventListener('DOMContentLoaded', () => {
+    initializeDetailPage();
+});

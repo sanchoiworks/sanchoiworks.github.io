@@ -1,166 +1,152 @@
 {
-    "categories": [
+  "data": [
+    {
+      "categoryId": "Space",
+      "title": "project 1",
+      "mainImage": "/images/1.jpg",
+      "sections": [
         {
-            "id": "space",
-            "items": [
-                {
-                    "id": "space-1",
-                    "title": "Space Project 1",
-                    "image": "/images/1.jpg",
-                    "detailImages": [
-                        {
-                            "image": "/images/1.jpg"
-                        },
-                        {
-                            "image": "/images/2.jpg"
-                        },
-                        {
-                            "image": "/images/3.jpg"
-                        }
-                    ]
-                },
-                {
-                    "id": "space-2",
-                    "title": "Space Project 2",
-                    "image": "/images/2.jpg",
-                    "detailImages": [
-                        {
-                            "image": "/images/2.jpg"
-                        },
-                        {
-                            "image": "/images/3.jpg"
-                        },
-                        {
-                            "image": "/images/4.jpg"
-                        }
-                    ]
-                },
-                {
-                    "id": "space-3",
-                    "title": "Space Project 3",
-                    "image": "/images/3.jpg",
-                    "detailImages": [
-                        {
-                            "image": "/images/3.jpg"
-                        },
-                        {
-                            "image": "/images/4.jpg"
-                        },
-                        {
-                            "image": "/images/1.jpg"
-                        }
-                    ]
-                }
-            ]
+          "sectionTitle": "A letter from Mt. Fuji",
+          "images": ["/images/1.jpg", "/images/2.jpg", "/images/3.jpg"]
         },
         {
-            "id": "brand",
-            "items": [
-                {
-                    "id": "brand-1",
-                    "title": "Brand Project 1",
-                    "image": "/images/3.jpg",
-                    "detailImages": [
-                        {
-                            "image": "/images/3.jpg"
-                        },
-                        {
-                            "image": "/images/4.jpg"
-                        }
-                    ]
-                },
-                {
-                    "id": "brand-2",
-                    "title": "Brand Project 2",
-                    "image": "/images/4.jpg",
-                    "detailImages": [
-                        {
-                            "image": "/images/4.jpg"
-                        },
-                        {
-                            "image": "/images/1.jpg"
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "id": "object",
-            "items": [
-                {
-                    "id": "object-1",
-                    "title": "Object Project 1",
-                    "image": "/images/object/object1.jpg",
-                    "detailImages": [
-                        {
-                            "image": "/images/object/object1.jpg"
-                        },
-                        {
-                            "image": "/images/object/object2.jpg"
-                        }
-                    ]
-                },
-                {
-                    "id": "object-2",
-                    "title": "Object Project 2",
-                    "image": "/images/object/object2.jpg",
-                    "detailImages": [
-                        {
-                            "image": "/images/object/object2.jpg"
-                        },
-                        {
-                            "image": "/images/object/object1.jpg"
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "id": "figure",
-            "items": [
-                {
-                    "id": "figure-1",
-                    "title": "Figure Project 1",
-                    "image": "/images/figure/figure1.jpg",
-                    "detailImages": [
-                        {
-                            "image": "/images/figure/figure1.jpg"
-                        },
-                        {
-                            "image": "/images/figure/figure2.jpg"
-                        }
-                    ]
-                },
-                {
-                    "id": "figure-2",
-                    "title": "Figure Project 2",
-                    "image": "/images/figure/figure2.jpg",
-                    "detailImages": [
-                        {
-                            "image": "/images/figure/figure2.jpg"
-                        },
-                        {
-                            "image": "/images/figure/figure1.jpg"
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "id": "personal",
-            "items": []
-        },
-        {
-            "id": "exhibition",
-            "items": []
-        },
-        {
-            "id": "letter",
-            "items": []
-        },
-        {
-            "id": "frames",
-            "items": []
+          "sectionTitle": "Another Section",
+          "images": ["/images/4.jpg", "/images/5.jpg"]
         }
-    ]
-} 
+      ]
+    },
+    {
+      "categoryId": "Space",
+      "title": "Space Project",
+      "mainImage": "/images/2.jpg",
+      "popupText": "이 프로젝트에 대한 간단한 소개 팝업입니다.",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/2.jpg", "/images/3.jpg", "/images/4.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Space",
+      "title": "Space Project",
+      "mainImage": "/images/3.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/3.jpg", "/images/4.jpg", "/images/1.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Brand",
+      "title": "Brand Project 1",
+      "mainImage": "/images/3.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/3.jpg", "/images/4.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Brand",
+      "title": "Brand Project 2",
+      "mainImage": "/images/4.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/4.jpg", "/images/1.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Object",
+      "title": "Object Project 1",
+      "mainImage": "/images/1.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/1.jpg", "/images/2.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Object",
+      "title": "Object Project 2",
+      "mainImage": "/images/2.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/2.jpg", "/images/3.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Figure",
+      "title": "Figure Project 1",
+      "mainImage": "/images/3.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/3.jpg", "/images/4.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Figure",
+      "title": "Figure Project 2",
+      "mainImage": "/images/4.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/4.jpg", "/images/5.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Personal",
+      "title": "Figure Project 1",
+      "mainImage": "/images/3.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/3.jpg", "/images/4.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Exhibitions",
+      "title": "Figure Project 1",
+      "mainImage": "/images/3.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/3.jpg", "/images/4.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "A letter from ",
+      "title": "Figure Project 1",
+      "mainImage": "/images/3.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/3.jpg", "/images/4.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Frames",
+      "title": "Figure Project 1",
+      "mainImage": "/images/3.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/3.jpg", "/images/4.jpg"]
+        }
+      ]
+    }
+  ]
+}
