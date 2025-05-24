@@ -1,0 +1,152 @@
+{
+  "data": [
+    {
+      "categoryId": "Space",
+      "title": "project 1",
+      "mainImage": "/images/1.jpg",
+      "sections": [
+        {
+          "sectionTitle": "A letter from Mt. Fuji",
+          "images": ["/images/1.jpg", "/images/2.jpg", "/images/3.jpg"]
+        },
+        {
+          "sectionTitle": "Another Section",
+          "images": ["/images/4.jpg", "/images/5.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Space",
+      "title": "Space Project",
+      "mainImage": "/images/2.jpg",
+      "popupText": "이 프로젝트에 대한 간단한 소개 팝업입니다.",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/2.jpg", "/images/3.jpg", "/images/4.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Space",
+      "title": "Space Project",
+      "mainImage": "/images/3.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/3.jpg", "/images/4.jpg", "/images/1.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Brand",
+      "title": "Brand Project 1",
+      "mainImage": "/images/3.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/3.jpg", "/images/4.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Brand",
+      "title": "Brand Project 2",
+      "mainImage": "/images/4.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/4.jpg", "/images/1.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Object",
+      "title": "Object Project 1",
+      "mainImage": "/images/1.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/1.jpg", "/images/2.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Object",
+      "title": "Object Project 2",
+      "mainImage": "/images/2.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/2.jpg", "/images/3.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Figure",
+      "title": "Figure Project 1",
+      "mainImage": "/images/3.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/3.jpg", "/images/4.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Figure",
+      "title": "Figure Project 2",
+      "mainImage": "/images/4.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/4.jpg", "/images/5.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Personal",
+      "title": "Figure Project 1",
+      "mainImage": "/images/3.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/3.jpg", "/images/4.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Exhibitions",
+      "title": "Figure Project 1",
+      "mainImage": "/images/3.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/3.jpg", "/images/4.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "A letter from ",
+      "title": "Figure Project 1",
+      "mainImage": "/images/3.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/3.jpg", "/images/4.jpg"]
+        }
+      ]
+    },
+    {
+      "categoryId": "Frames",
+      "title": "Figure Project 1",
+      "mainImage": "/images/3.jpg",
+      "sections": [
+        {
+          "sectionTitle": "Section 1",
+          "images": ["/images/3.jpg", "/images/4.jpg"]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail View</title>
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/media.css">
+</head>
+<body>
+    <header>
+        <div class="logo"><a href="index.html">San Choi</a></div>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="list.html">Index</a></li>
+                <li><a href="about.html">About</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="detail-container">
+        <div class="swiper detail-swiper">
+            <div class="swiper-wrapper">
+                <!-- Slides will be dynamically added here -->
+            </div>
+        </div>
+        <div class="click-area click-prev"></div>
+        <div class="click-area click-next"></div>
+        <div class="info-left">
+            <div class="slide-counter">
+                <span class="current">1</span> / <span class="total">1</span>
+            </div>
+            <div class="image-title"></div>
+        </div>
+        <div class="date-tabs"></div>
+    </div>
+
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script type="module" src="js/detail.js"></script>
+</body>
+</html>
