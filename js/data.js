@@ -147,7 +147,7 @@ const loadDataInParallel = async (endpoints) => {
 export async function loadMainData() {
   try {
     const result = await fetchWithCache(
-      'https://strapi-fvc4.onrender.com/api/mains?populate[mainImage][fields][0]=url&populate[section][populate][images][fields][0]=url&fields[0]=title&fields[1]=popupText',
+      'https://strapi-fvc4.onrender.com/api/mains?populate[mainImage]=true&populate[section][populate][images]=true&fields[0]=title&fields[1]=popupText',
       'main'
     );
 
@@ -157,16 +157,20 @@ export async function loadMainData() {
 
     return result.data.map(item => {
       // mainImage URL 처리 수정
-      const mainImageUrl = processImageUrl(item.mainImage?.data?.attributes?.url || item.mainImage?.url);
+      const mainImageUrl = processImageUrl(
+        item.attributes?.mainImage?.data?.attributes?.url || 
+        item.mainImage?.data?.attributes?.url || 
+        item.mainImage?.url
+      );
 
-      const sections = item.section?.map(section => {
-        const sectionImages = section.images?.map(img => 
-          processImageUrl(img?.data?.attributes?.url || img?.url)
+      const sections = item.attributes?.section?.data?.map(section => {
+        const sectionImages = section.attributes?.images?.data?.map(img => 
+          processImageUrl(img.attributes?.url)
         ) || [mainImageUrl];
 
         return {
           id: section.id,
-          sectionTitle: section.sectionTitle || '',
+          sectionTitle: section.attributes?.sectionTitle || '',
           images: sectionImages,
         };
       }) || [];
@@ -174,18 +178,18 @@ export async function loadMainData() {
       if (sections.length === 0) {
         sections.push({
           id: item.id,
-          sectionTitle: item.title || 'Main',
+          sectionTitle: item.attributes?.title || 'Main',
           images: [mainImageUrl],
         });
       }
 
       return {
         id: item.id,
-        projectID: item.projectID ?? item.id,
-        title: item.title ?? '',
+        projectID: item.attributes?.projectID ?? item.id,
+        title: item.attributes?.title ?? '',
         mainImage: mainImageUrl,
         sections,
-        popupText: item.popupText ?? '',
+        popupText: item.attributes?.popupText ?? '',
       };
     });
   } catch (e) {
