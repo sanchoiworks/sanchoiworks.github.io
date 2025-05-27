@@ -72,7 +72,7 @@ const fetchWithCache = async (url, cacheKey) => {
   }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 3000); // 3초로 타임아웃 감소
+  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5초로 타임아웃 증가
 
   try {
     const response = await fetch(url, {
@@ -84,7 +84,7 @@ const fetchWithCache = async (url, cacheKey) => {
       mode: 'cors',
       credentials: 'omit',
       signal: controller.signal,
-      cache: 'force-cache' // 브라우저 캐시 강제 사용
+      cache: 'force-cache'
     });
 
     clearTimeout(timeoutId);
@@ -94,26 +94,11 @@ const fetchWithCache = async (url, cacheKey) => {
     }
 
     const data = await response.json();
-    
-    // 데이터 구조 단순화
-    const simplifiedData = {
-      data: data.data.map(item => ({
-        id: item.id,
-        title: item.title || '',
-        mainImage: item.mainImage?.url || '',
-        popupText: item.popupText || '',
-        categoryId: item.categoryId || '',
-        section: item.section?.map(section => ({
-          id: section.id,
-          sectionTitle: section.sectionTitle || '',
-          images: section.images?.map(img => img?.url) || []
-        })) || []
-      }))
-    };
+    console.log('API Response:', data); // API 응답 로깅
 
-    cache[cacheKey] = simplifiedData;
+    cache[cacheKey] = data;
     cache.lastFetch = Date.now();
-    return simplifiedData;
+    return data;
   } catch (error) {
     clearTimeout(timeoutId);
     if (error.name === 'AbortError') {
@@ -147,30 +132,35 @@ const loadDataInParallel = async (endpoints) => {
 export async function loadMainData() {
   try {
     const result = await fetchWithCache(
-      'https://strapi-fvc4.onrender.com/api/mains?populate[mainImage]=true&populate[section][populate][images]=true&fields[0]=title&fields[1]=popupText',
+      'https://strapi-fvc4.onrender.com/api/mains?populate=*',
       'main'
     );
 
+    console.log('Main Data Result:', result); // 결과 로깅
+
     if (!result?.data || !Array.isArray(result.data)) {
-      throw new Error('Invalid data structure received from API');
+      console.error('Invalid data structure:', result);
+      return cache.main || [];
     }
 
     return result.data.map(item => {
+      const attributes = item.attributes || {};
+      
       // mainImage URL 처리 수정
       const mainImageUrl = processImageUrl(
-        item.attributes?.mainImage?.data?.attributes?.url || 
-        item.mainImage?.data?.attributes?.url || 
-        item.mainImage?.url
+        attributes.mainImage?.data?.attributes?.url || 
+        attributes.mainImage?.url
       );
 
-      const sections = item.attributes?.section?.data?.map(section => {
-        const sectionImages = section.attributes?.images?.data?.map(img => 
+      const sections = attributes.section?.data?.map(section => {
+        const sectionAttributes = section.attributes || {};
+        const sectionImages = sectionAttributes.images?.data?.map(img => 
           processImageUrl(img.attributes?.url)
         ) || [mainImageUrl];
 
         return {
           id: section.id,
-          sectionTitle: section.attributes?.sectionTitle || '',
+          sectionTitle: sectionAttributes.sectionTitle || '',
           images: sectionImages,
         };
       }) || [];
@@ -178,18 +168,18 @@ export async function loadMainData() {
       if (sections.length === 0) {
         sections.push({
           id: item.id,
-          sectionTitle: item.attributes?.title || 'Main',
+          sectionTitle: attributes.title || 'Main',
           images: [mainImageUrl],
         });
       }
 
       return {
         id: item.id,
-        projectID: item.attributes?.projectID ?? item.id,
-        title: item.attributes?.title ?? '',
+        projectID: attributes.projectID ?? item.id,
+        title: attributes.title ?? '',
         mainImage: mainImageUrl,
         sections,
-        popupText: item.attributes?.popupText ?? '',
+        popupText: attributes.popupText ?? '',
       };
     });
   } catch (e) {
