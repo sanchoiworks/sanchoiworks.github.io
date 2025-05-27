@@ -1,6 +1,17 @@
 const STRAPI_URL = 'https://strapi-fvc4.onrender.com'; // 본인 Strapi 주소로 변경하세요
 const PLACEHOLDER_IMAGE = '/path/to/placeholder.jpg'; // 기본 이미지 경로
 
+// 이미지 URL 처리 헬퍼 함수
+const processImageUrl = (url) => {
+  if (!url) return PLACEHOLDER_IMAGE;
+  // Cloudinary URL인 경우 그대로 사용
+  if (url.includes('cloudinary.com')) {
+    return url;
+  }
+  // Strapi URL인 경우 STRAPI_URL 추가
+  return `${STRAPI_URL}${url}`;
+};
+
 // 메인 데이터 로딩 함수
 export async function loadMainData() {
   try {
@@ -19,15 +30,11 @@ export async function loadMainData() {
     return result.data.map(item => {
       // Handle main image
       const mainImage = item.mainImage;
-      const mainImageUrl = mainImage?.url
-        ? `https://strapi-fvc4.onrender.com${mainImage.url}`
-        : '/path/to/placeholder.jpg';
+      const mainImageUrl = processImageUrl(mainImage?.url);
 
       // Handle sections from the component
       const sections = item.section?.map(section => {
-        const sectionImages = section.images?.map(img => 
-          img?.url ? `https://strapi-fvc4.onrender.com${img.url}` : mainImageUrl
-        ) || [mainImageUrl];
+        const sectionImages = section.images?.map(img => processImageUrl(img?.url)) || [mainImageUrl];
 
         return {
           id: section.id,
@@ -64,7 +71,7 @@ export async function loadMainData() {
 async function loadSectionDetails(sectionId) {
   try {
     const response = await fetch(
-      `http://https://strapi-fvc4.onrender.com/api/sections/${sectionId}?populate=images`
+      `https://strapi-fvc4.onrender.com/api/sections/${sectionId}?populate=images`
     );
     if (!response.ok) throw new Error('Failed to fetch section details');
     const result = await response.json();
@@ -72,9 +79,7 @@ async function loadSectionDetails(sectionId) {
     if (!result.data) return { images: [] };
 
     const images = Array.isArray(result.data.images)
-      ? result.data.images.map(img => 
-          img?.url ? `https://strapi-fvc4.onrender.com${img.url}` : '/path/to/placeholder.jpg'
-        )
+      ? result.data.images.map(img => processImageUrl(img?.url))
       : [];
 
     return {
@@ -98,9 +103,7 @@ export async function loadGalleryData() {
     const filteredData = data.data.filter(item => item);
 
     return filteredData.map(item => {
-      const mainImageUrl = item.mainImage?.url
-        ? `${STRAPI_URL}${item.mainImage.url}`
-        : PLACEHOLDER_IMAGE;
+      const mainImageUrl = processImageUrl(item.mainImage?.url);
 
       return {
         id: item.id,
@@ -135,9 +138,7 @@ export async function loadCategoriesData() {
     return data.data.map(item => {
       console.log('Processing item:', item);
       
-      const mainImageUrl = item.mainImage?.url
-        ? `https://strapi-fvc4.onrender.com${item.mainImage.url}`
-        : null;
+      const mainImageUrl = processImageUrl(item.mainImage?.url);
 
       // Handle sections
       const sections = item.section?.map(section => {
@@ -146,7 +147,7 @@ export async function loadCategoriesData() {
         // Get section images
         const sectionImages = section.images?.map(img => {
           console.log('Processing section image:', img);
-          return img?.url ? `https://strapi-fvc4.onrender.com${img.url}` : mainImageUrl;
+          return processImageUrl(img?.url);
         }) || [];
 
         // If no images in section, use main image
@@ -207,9 +208,7 @@ export async function loadProjectsData() {
     return data.data.map(item => {
       console.log('Processing item:', item);
       
-      const mainImageUrl = item.mainImage?.url
-        ? `https://strapi-fvc4.onrender.com${item.mainImage.url}`
-        : null;
+      const mainImageUrl = processImageUrl(item.mainImage?.url);
 
       // Handle sections
       const sections = item.section?.map(section => {
@@ -218,7 +217,7 @@ export async function loadProjectsData() {
         // Get section images
         const sectionImages = section.images?.map(img => {
           console.log('Processing section image:', img);
-          return img?.url ? `https://strapi-fvc4.onrender.com${img.url}` : mainImageUrl;
+          return processImageUrl(img?.url);
         }) || [];
 
         // If no images in section, use main image
@@ -248,6 +247,7 @@ export async function loadProjectsData() {
         title: item.title || '',
         mainImage: mainImageUrl,
         popupText: item.popupText || '',
+        categoryId: item.categoryId || '',
         sections: sections
       };
       
