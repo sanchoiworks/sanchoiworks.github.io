@@ -5,8 +5,9 @@ const PLACEHOLDER_IMAGE = '/path/to/placeholder.jpg'; // 기본 이미지 경로
 const cache = {
   categories: null,
   projects: null,
+  main: null,
   lastFetch: null,
-  CACHE_DURATION: 5 * 60 * 1000, // 30분으로 증가
+  CACHE_DURATION: 30 * 60 * 1000, // 30분
 };
 
 // 이미지 URL 처리 헬퍼 함수
@@ -48,27 +49,49 @@ const createImageElement = (url) => {
   return img;
 };
 
+// 공통 API 요청 설정
+const fetchWithCache = async (url, cacheKey) => {
+  // 캐시된 데이터가 있고 유효한 경우 사용
+  if (cache[cacheKey] && cache.lastFetch && 
+      Date.now() - cache.lastFetch < cache.CACHE_DURATION) {
+    return cache[cacheKey];
+  }
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    mode: 'cors',
+    credentials: 'omit'
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data = await response.json();
+  cache[cacheKey] = data;
+  cache.lastFetch = Date.now();
+  return data;
+};
+
 // 메인 데이터 로딩 함수
 export async function loadMainData() {
   try {
-    const response = await fetch(
-      'https://strapi-fvc4.onrender.com/api/mains?populate[mainImage]=true&populate[section][populate][images]=true'
+    const result = await fetchWithCache(
+      'https://strapi-fvc4.onrender.com/api/mains?populate[mainImage][fields][0]=url&populate[section][populate][images][fields][0]=url&fields[0]=title&fields[1]=popupText',
+      'main'
     );
-    if (!response.ok) throw new Error('Failed to fetch main data');
-    const result = await response.json();
-
-    console.log('Raw API response:', JSON.stringify(result, null, 2));
 
     if (!result.data || !Array.isArray(result.data)) {
       throw new Error('Invalid data structure received from API');
     }
 
     return result.data.map(item => {
-      // Handle main image
-      const mainImage = item.mainImage;
-      const mainImageUrl = processImageUrl(mainImage?.url);
+      const mainImageUrl = processImageUrl(item.mainImage?.url);
 
-      // Handle sections from the component
       const sections = item.section?.map(section => {
         const sectionImages = section.images?.map(img => processImageUrl(img?.url)) || [mainImageUrl];
 
@@ -79,7 +102,6 @@ export async function loadMainData() {
         };
       }) || [];
 
-      // If there are no sections, create one with the main image
       if (sections.length === 0) {
         sections.push({
           id: item.id,
@@ -99,7 +121,7 @@ export async function loadMainData() {
     });
   } catch (e) {
     console.error('Error in loadMainData:', e);
-    return [];
+    return cache.main || [];
   }
 }
 
@@ -127,59 +149,38 @@ async function loadSectionDetails(sectionId) {
   }
 }
 
-// 갤러리 데이터 로딩 함수 수정
+// 갤러리 데이터 로딩 함수
 export async function loadGalleryData() {
   try {
-    const response = await fetch(`${STRAPI_URL}/api/alls?populate=mainImage`);
-    if (!response.ok) {
-      throw new Error(`Failed to load gallery data: ${response.status}`);
-    }
-    const data = await response.json();
+    const data = await fetchWithCache(
+      `${STRAPI_URL}/api/alls?populate[mainImage][fields][0]=url&fields[0]=title&fields[1]=categoryId&fields[2]=popupText`,
+      'categories'
+    );
 
-    const filteredData = data.data.filter(item => item);
-
-    return filteredData.map(item => {
-      const mainImageUrl = processImageUrl(item.mainImage?.url);
-
-      return {
+    return data.data
+      .filter(item => item)
+      .map(item => ({
         id: item.id,
         title: item.title || '',
-        mainImage: mainImageUrl,
+        mainImage: processImageUrl(item.mainImage?.url),
         description: item.popupText || '',
         categoryId: item.categoryId || '',
-      };
-    });
+      }));
   } catch (error) {
     console.error('Error loading gallery data:', error);
-    throw error;
+    return cache.categories || [];
   }
 }
 
 // 카테고리 데이터 로딩 함수
 export async function loadCategoriesData() {
   try {
-    // 캐시된 데이터가 있고 유효한 경우 사용
-    if (cache.categories && cache.lastFetch && 
-        Date.now() - cache.lastFetch < cache.CACHE_DURATION) {
-      return cache.categories;
-    }
-
-    const response = await fetch(
+    const data = await fetchWithCache(
       'https://strapi-fvc4.onrender.com/api/alls?populate[mainImage][fields][0]=url&populate[section][populate][images][fields][0]=url&fields[0]=title&fields[1]=categoryId&fields[2]=popupText',
-      {
-        headers: {
-          'Accept': 'application/json',
-          'Cache-Control': 'max-age=1800' // 30분 캐시
-        }
-      }
+      'categories'
     );
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    const processedData = data.data.map(item => {
+
+    return data.data.map(item => {
       const mainImageUrl = processImageUrl(item.mainImage?.url);
 
       const sections = item.section?.map(section => {
@@ -214,49 +215,26 @@ export async function loadCategoriesData() {
         sections: sections
       };
     });
-
-    // 캐시 업데이트
-    cache.categories = processedData;
-    cache.lastFetch = Date.now();
-
-    return processedData;
   } catch (error) {
     console.error('Error loading categories data:', error);
     return cache.categories || [];
   }
 }
 
+// 프로젝트 데이터 로딩 함수
 export async function loadProjectsData() {
   try {
-    const response = await fetch('https://strapi-fvc4.onrender.com/api/alls?populate[mainImage]=true&populate[section][populate][images]=true');
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    console.log('API Response:', data);
-    console.log('First item in data:', data.data[0]);
-
-    if (!data.data || !Array.isArray(data.data)) {
-      console.error('Invalid data structure:', data);
-      return [];
-    }
+    const data = await fetchWithCache(
+      'https://strapi-fvc4.onrender.com/api/alls?populate[mainImage][fields][0]=url&populate[section][populate][images][fields][0]=url&fields[0]=title&fields[1]=categoryId&fields[2]=popupText',
+      'projects'
+    );
 
     return data.data.map(item => {
-      console.log('Processing item:', item);
-      
       const mainImageUrl = processImageUrl(item.mainImage?.url);
 
-      // Handle sections
       const sections = item.section?.map(section => {
-        console.log('Processing section:', section);
-        
-        // Get section images
-        const sectionImages = section.images?.map(img => {
-          console.log('Processing section image:', img);
-          return processImageUrl(img?.url);
-        }) || [];
+        const sectionImages = section.images?.map(img => processImageUrl(img?.url)) || [];
 
-        // If no images in section, use main image
         if (sectionImages.length === 0 && mainImageUrl) {
           sectionImages.push(mainImageUrl);
         }
@@ -268,7 +246,6 @@ export async function loadProjectsData() {
         };
       }) || [];
 
-      // If there are no sections, create one with the main image
       if (sections.length === 0 && mainImageUrl) {
         sections.push({
           id: item.id,
@@ -277,7 +254,7 @@ export async function loadProjectsData() {
         });
       }
 
-      const mappedItem = {
+      return {
         id: item.id,
         name: item.title || '',
         title: item.title || '',
@@ -286,12 +263,9 @@ export async function loadProjectsData() {
         categoryId: item.categoryId || '',
         sections: sections
       };
-      
-      console.log('Mapped item:', mappedItem);
-      return mappedItem;
     });
   } catch (error) {
     console.error('Error loading projects data:', error);
-    return [];
+    return cache.projects || [];
   }
 }
