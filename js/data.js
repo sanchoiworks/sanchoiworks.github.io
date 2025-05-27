@@ -16,11 +16,15 @@ const processImageUrl = (url) => {
   
   // Cloudinary URL인 경우 이미지 최적화
   if (url.includes('cloudinary.com')) {
-    // 더 강력한 이미지 최적화
     return url.replace('/upload/', '/upload/w_600,c_scale,q_80,f_auto,dpr_auto,fl_progressive,fl_force_strip/');
   }
   
-  return `${STRAPI_URL}${url}`;
+  // Strapi URL인 경우
+  if (url.startsWith('/')) {
+    return `${STRAPI_URL}${url}`;
+  }
+  
+  return url;
 };
 
 // 이미지 지연 로딩을 위한 함수
@@ -142,25 +146,23 @@ const loadDataInParallel = async (endpoints) => {
 // 메인 데이터 로딩 함수
 export async function loadMainData() {
   try {
-    const endpoints = [
-      {
-        url: 'https://strapi-fvc4.onrender.com/api/mains?populate[mainImage][fields][0]=url&populate[section][populate][images][fields][0]=url&fields[0]=title&fields[1]=popupText',
-        key: 'main'
-      }
-    ];
-
-    const data = await loadDataInParallel(endpoints);
-    const result = data.main;
+    const result = await fetchWithCache(
+      'https://strapi-fvc4.onrender.com/api/mains?populate[mainImage][fields][0]=url&populate[section][populate][images][fields][0]=url&fields[0]=title&fields[1]=popupText',
+      'main'
+    );
 
     if (!result?.data || !Array.isArray(result.data)) {
       throw new Error('Invalid data structure received from API');
     }
 
     return result.data.map(item => {
-      const mainImageUrl = processImageUrl(item.mainImage?.url);
+      // mainImage URL 처리 수정
+      const mainImageUrl = processImageUrl(item.mainImage?.data?.attributes?.url || item.mainImage?.url);
 
       const sections = item.section?.map(section => {
-        const sectionImages = section.images?.map(img => processImageUrl(img?.url)) || [mainImageUrl];
+        const sectionImages = section.images?.map(img => 
+          processImageUrl(img?.data?.attributes?.url || img?.url)
+        ) || [mainImageUrl];
 
         return {
           id: section.id,
