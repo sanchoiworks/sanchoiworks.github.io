@@ -1,182 +1,198 @@
-const STRAPI_URL = 'https://strapi-fvc4.onrender.com';
-const PLACEHOLDER_IMAGE = '/path/to/placeholder.jpg';
+const STRAPI_URL = 'https://strapi-fvc4.onrender.com'; // 본인 Strapi 주소로 변경하세요
+const PLACEHOLDER_IMAGE = '/path/to/placeholder.jpg'; // 기본 이미지 경로
 
+// 이미지 URL 처리 헬퍼 함수
 const processImageUrl = (url) => {
   if (!url) return PLACEHOLDER_IMAGE;
-  if (url.includes('cloudinary.com')) return url;
-  return `${STRAPI_URL}${url}`;
+  return url.includes('cloudinary.com') ? url : `${STRAPI_URL}${url}`;
 };
 
-let cache = {
-  mainData: null,
-  galleryData: null,
-  categoriesData: null,
-  projectsData: null,
-  timestamp: 0,
-};
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+// 공통 캐시 기반 fetch 함수
+const cache = new Map();
+async function fetchDataWithCache(url) {
+  if (cache.has(url)) return cache.get(url);
 
-async function fetchDataWithCache(key, fetchFunc) {
-  const now = Date.now();
-  if (cache[key] && now - cache.timestamp < CACHE_DURATION) {
-    return cache[key];
-  }
-  const data = await fetchFunc();
-  cache[key] = data;
-  cache.timestamp = now;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
+  const data = await response.json();
+  cache.set(url, data);
   return data;
 }
 
+// 메인 데이터 로딩
 export async function loadMainData() {
-  return fetchDataWithCache('mainData', async () => {
-    try {
-      const response = await fetch(`${STRAPI_URL}/api/mains?populate=deep,2`);
-      if (!response.ok) throw new Error('Failed to fetch main data');
-      const result = await response.json();
+  try {
+    const data = await fetchDataWithCache(
+      `${STRAPI_URL}/api/mains?populate[mainImage]=true&populate[section][populate][images]=true`
+    );
 
-      if (!Array.isArray(result.data)) throw new Error('Invalid data');
+    if (!data?.data || !Array.isArray(data.data)) {
+      throw new Error('Invalid main data structure');
+    }
 
-      return result.data.map(item => {
-        const mainImageUrl = processImageUrl(item.attributes.mainImage?.data?.attributes?.url);
-        const sections = item.attributes.section?.map(section => {
-          const sectionImages = section.images?.map(img => processImageUrl(img?.url)) || [mainImageUrl];
-          return {
-            id: section.id,
-            sectionTitle: section.sectionTitle || '',
-            images: sectionImages,
-          };
-        }) || [];
+    return data.data.map(item => {
+      const mainImageUrl = processImageUrl(item.attributes?.mainImage?.data?.attributes?.url);
 
-        if (sections.length === 0) {
-          sections.push({
-            id: item.id,
-            sectionTitle: item.attributes.title || 'Main',
-            images: [mainImageUrl],
-          });
-        }
-
+      const sections = (item.attributes?.section || []).map(section => {
+        const images = (section.images || []).map(img =>
+          processImageUrl(img?.url)
+        );
         return {
-          id: item.id,
-          projectID: item.attributes.projectID ?? item.id,
-          title: item.attributes.title ?? '',
-          mainImage: mainImageUrl,
-          sections,
-          popupText: item.attributes.popupText ?? '',
+          id: section.id,
+          sectionTitle: section.sectionTitle || '',
+          images: images.length ? images : [mainImageUrl],
         };
       });
-    } catch (e) {
-      console.error('Error in loadMainData:', e);
-      return [];
-    }
-  });
+
+      if (sections.length === 0) {
+        sections.push({
+          id: item.id,
+          sectionTitle: item.attributes?.title || 'Main',
+          images: [mainImageUrl],
+        });
+      }
+
+      return {
+        id: item.id,
+        projectID: item.attributes?.projectID ?? item.id,
+        title: item.attributes?.title ?? '',
+        mainImage: mainImageUrl,
+        popupText: item.attributes?.popupText ?? '',
+        sections,
+      };
+    });
+  } catch (e) {
+    console.error('Error in loadMainData:', e);
+    return [];
+  }
 }
 
+// 섹션 상세 로딩
+export async function loadSectionDetails(sectionId) {
+  try {
+    const data = await fetchDataWithCache(
+      `${STRAPI_URL}/api/sections/${sectionId}?populate=images`
+    );
+    const images = (data?.data?.attributes?.images || []).map(img =>
+      processImageUrl(img?.url)
+    );
+    return { images };
+  } catch (e) {
+    console.error('Error loading section details:', e);
+    return { images: [] };
+  }
+}
+
+// 갤러리 데이터 로딩
 export async function loadGalleryData() {
-  return fetchDataWithCache('galleryData', async () => {
-    try {
-      const response = await fetch(`${STRAPI_URL}/api/alls?populate=mainImage`);
-      if (!response.ok) throw new Error(`Failed to load gallery data: ${response.status}`);
-      const data = await response.json();
-
-      return data.data.map(item => {
-        const imgUrl = processImageUrl(item.attributes.mainImage?.data?.attributes?.url);
-        return {
-          id: item.id,
-          title: item.attributes.title || '',
-          mainImage: imgUrl,
-          description: item.attributes.popupText || '',
-          categoryId: item.attributes.categoryId || '',
-        };
-      });
-    } catch (error) {
-      console.error('Error loading gallery data:', error);
-      return [];
-    }
-  });
+  try {
+    const data = await fetchDataWithCache(
+      `${STRAPI_URL}/api/alls?populate[mainImage]=true`
+    );
+    return (data.data || []).map(item => {
+      const attr = item.attributes;
+      return {
+        id: item.id,
+        title: attr?.title || '',
+        mainImage: processImageUrl(attr?.mainImage?.data?.attributes?.url),
+        description: attr?.popupText || '',
+        categoryId: attr?.categoryId || '',
+      };
+    });
+  } catch (e) {
+    console.error('Error loading gallery data:', e);
+    return [];
+  }
 }
 
+// 카테고리 데이터 로딩
 export async function loadCategoriesData() {
-  return fetchDataWithCache('categoriesData', async () => {
-    try {
-      const response = await fetch(`${STRAPI_URL}/api/alls?populate=deep,2`);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
+  try {
+    const data = await fetchDataWithCache(
+      `${STRAPI_URL}/api/alls?populate[mainImage]=true&populate[section][populate][images]=true`
+    );
 
-      return data.data.map(item => {
-        const mainImageUrl = processImageUrl(item.attributes.mainImage?.data?.attributes?.url);
-        const sections = item.attributes.section?.map(section => {
-          const sectionImages = section.images?.map(img => processImageUrl(img?.url)) || [mainImageUrl];
-          return {
-            id: section.id,
-            sectionTitle: section.sectionTitle || '',
-            images: sectionImages,
-          };
-        }) || [];
+    return (data.data || []).map(item => {
+      const attr = item.attributes;
+      const mainImageUrl = processImageUrl(attr?.mainImage?.data?.attributes?.url);
 
-        if (sections.length === 0 && mainImageUrl) {
-          sections.push({
-            id: item.id,
-            sectionTitle: item.attributes.title || 'Main',
-            images: [mainImageUrl],
-          });
-        }
-
+      const sections = (attr?.section || []).map(section => {
+        const images = (section.images || []).map(img =>
+          processImageUrl(img?.url)
+        );
         return {
-          id: item.id,
-          name: item.attributes.title || '',
-          title: item.attributes.title || '',
-          mainImage: mainImageUrl,
-          popupText: item.attributes.popupText || '',
-          categoryId: item.attributes.categoryId || '',
-          sections,
+          id: section.id,
+          sectionTitle: section.sectionTitle || '',
+          images: images.length ? images : [mainImageUrl],
         };
       });
-    } catch (error) {
-      console.error('Error loading categories data:', error);
-      return [];
-    }
-  });
+
+      if (sections.length === 0) {
+        sections.push({
+          id: item.id,
+          sectionTitle: attr?.title || 'Main',
+          images: [mainImageUrl],
+        });
+      }
+
+      return {
+        id: item.id,
+        name: attr?.title || '',
+        title: attr?.title || '',
+        mainImage: mainImageUrl,
+        popupText: attr?.popupText || '',
+        categoryId: attr?.categoryId || '',
+        sections,
+      };
+    });
+  } catch (e) {
+    console.error('Error loading categories data:', e);
+    return [];
+  }
 }
 
+// 프로젝트 데이터 로딩
 export async function loadProjectsData() {
-  return fetchDataWithCache('projectsData', async () => {
-    try {
-      const response = await fetch(`${STRAPI_URL}/api/alls?populate=deep,2`);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
+  try {
+    const data = await fetchDataWithCache(
+      `${STRAPI_URL}/api/alls?populate[mainImage]=true&populate[section][populate][images]=true`
+    );
 
-      return data.data.map(item => {
-        const mainImageUrl = processImageUrl(item.attributes.mainImage?.data?.attributes?.url);
-        const sections = item.attributes.section?.map(section => {
-          const sectionImages = section.images?.map(img => processImageUrl(img?.url)) || [mainImageUrl];
-          return {
-            id: section.id,
-            sectionTitle: section.sectionTitle || '',
-            images: sectionImages,
-          };
-        }) || [];
+    return (data.data || []).map(item => {
+      const attr = item.attributes;
+      const mainImageUrl = processImageUrl(attr?.mainImage?.data?.attributes?.url);
 
-        if (sections.length === 0 && mainImageUrl) {
-          sections.push({
-            id: item.id,
-            sectionTitle: item.attributes.title || 'Main',
-            images: [mainImageUrl],
-          });
-        }
-
+      const sections = (attr?.section || []).map(section => {
+        const images = (section.images || []).map(img =>
+          processImageUrl(img?.url)
+        );
         return {
-          id: item.id,
-          name: item.attributes.title || '',
-          title: item.attributes.title || '',
-          mainImage: mainImageUrl,
-          popupText: item.attributes.popupText || '',
-          categoryId: item.attributes.categoryId || '',
-          sections,
+          id: section.id,
+          sectionTitle: section.sectionTitle || '',
+          images: images.length ? images : [mainImageUrl],
         };
       });
-    } catch (error) {
-      console.error('Error loading projects data:', error);
-      return [];
-    }
-  });
+
+      if (sections.length === 0) {
+        sections.push({
+          id: item.id,
+          sectionTitle: attr?.title || 'Main',
+          images: [mainImageUrl],
+        });
+      }
+
+      return {
+        id: item.id,
+        name: attr?.title || '',
+        title: attr?.title || '',
+        mainImage: mainImageUrl,
+        popupText: attr?.popupText || '',
+        categoryId: attr?.categoryId || '',
+        sections,
+      };
+    });
+  } catch (e) {
+    console.error('Error loading projects data:', e);
+    return [];
+  }
 }
