@@ -1,14 +1,23 @@
 const STRAPI_URL = 'https://strapi-fvc4.onrender.com'; // 본인 Strapi 주소로 변경하세요
 const PLACEHOLDER_IMAGE = '/path/to/placeholder.jpg'; // 기본 이미지 경로
 
+// 캐시 객체 추가
+const cache = {
+  categories: null,
+  projects: null,
+  lastFetch: null,
+  CACHE_DURATION: 5 * 60 * 1000, // 5분
+};
+
 // 이미지 URL 처리 헬퍼 함수
 const processImageUrl = (url) => {
   if (!url) return PLACEHOLDER_IMAGE;
-  // Cloudinary URL인 경우 그대로 사용
+  
+  // Cloudinary URL인 경우 이미지 최적화
   if (url.includes('cloudinary.com')) {
-    return url;
+    return url.replace('/upload/', '/upload/w_800,c_scale,q_auto,f_auto/');
   }
-  // Strapi URL인 경우 STRAPI_URL 추가
+  
   return `${STRAPI_URL}${url}`;
 };
 
@@ -119,38 +128,27 @@ export async function loadGalleryData() {
   }
 }
 
-// 카테고리 데이터 로딩 함수 수정
+// 카테고리 데이터 로딩 함수
 export async function loadCategoriesData() {
   try {
+    // 캐시된 데이터가 있고 유효한 경우 사용
+    if (cache.categories && cache.lastFetch && 
+        Date.now() - cache.lastFetch < cache.CACHE_DURATION) {
+      return cache.categories;
+    }
+
     const response = await fetch('https://strapi-fvc4.onrender.com/api/alls?populate[mainImage]=true&populate[section][populate][images]=true');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    console.log('API Response:', data);
-    console.log('First item in data:', data.data[0]);
 
-    if (!data.data || !Array.isArray(data.data)) {
-      console.error('Invalid data structure:', data);
-      return [];
-    }
-
-    return data.data.map(item => {
-      console.log('Processing item:', item);
-      
+    const processedData = data.data.map(item => {
       const mainImageUrl = processImageUrl(item.mainImage?.url);
 
-      // Handle sections
       const sections = item.section?.map(section => {
-        console.log('Processing section:', section);
-        
-        // Get section images
-        const sectionImages = section.images?.map(img => {
-          console.log('Processing section image:', img);
-          return processImageUrl(img?.url);
-        }) || [];
+        const sectionImages = section.images?.map(img => processImageUrl(img?.url)) || [];
 
-        // If no images in section, use main image
         if (sectionImages.length === 0 && mainImageUrl) {
           sectionImages.push(mainImageUrl);
         }
@@ -162,7 +160,6 @@ export async function loadCategoriesData() {
         };
       }) || [];
 
-      // If there are no sections, create one with the main image
       if (sections.length === 0 && mainImageUrl) {
         sections.push({
           id: item.id,
@@ -171,7 +168,7 @@ export async function loadCategoriesData() {
         });
       }
 
-      const mappedItem = {
+      return {
         id: item.id,
         name: item.title || '',
         title: item.title || '',
@@ -180,13 +177,16 @@ export async function loadCategoriesData() {
         categoryId: item.categoryId || '',
         sections: sections
       };
-      
-      console.log('Mapped item:', mappedItem);
-      return mappedItem;
     });
+
+    // 캐시 업데이트
+    cache.categories = processedData;
+    cache.lastFetch = Date.now();
+
+    return processedData;
   } catch (error) {
     console.error('Error loading categories data:', error);
-    return [];
+    return cache.categories || [];
   }
 }
 
