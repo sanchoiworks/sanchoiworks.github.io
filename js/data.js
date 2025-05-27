@@ -6,7 +6,7 @@ const cache = {
   categories: null,
   projects: null,
   lastFetch: null,
-  CACHE_DURATION: 5 * 60 * 1000, // 5분
+  CACHE_DURATION: 5 * 60 * 1000, // 30분으로 증가
 };
 
 // 이미지 URL 처리 헬퍼 함수
@@ -19,6 +19,33 @@ const processImageUrl = (url) => {
   }
   
   return `${STRAPI_URL}${url}`;
+};
+
+// 이미지 지연 로딩을 위한 함수
+const lazyLoadImage = (imgElement, url) => {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        imgElement.src = url;
+        observer.unobserve(imgElement);
+      }
+    });
+  }, {
+    rootMargin: '50px 0px',
+    threshold: 0.1
+  });
+  
+  observer.observe(imgElement);
+};
+
+// 이미지 요소 생성 함수
+const createImageElement = (url) => {
+  const img = document.createElement('img');
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  img.fetchPriority = 'low';
+  lazyLoadImage(img, url);
+  return img;
 };
 
 // 메인 데이터 로딩 함수
@@ -137,12 +164,21 @@ export async function loadCategoriesData() {
       return cache.categories;
     }
 
-    const response = await fetch('https://strapi-fvc4.onrender.com/api/alls?populate[mainImage]=true&populate[section][populate][images]=true');
+    const response = await fetch(
+      'https://strapi-fvc4.onrender.com/api/alls?populate[mainImage][fields][0]=url&populate[section][populate][images][fields][0]=url&fields[0]=title&fields[1]=categoryId&fields[2]=popupText',
+      {
+        headers: {
+          'Accept': 'application/json',
+          'Cache-Control': 'max-age=1800' // 30분 캐시
+        }
+      }
+    );
+    
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
+    
     const data = await response.json();
-
     const processedData = data.data.map(item => {
       const mainImageUrl = processImageUrl(item.mainImage?.url);
 
