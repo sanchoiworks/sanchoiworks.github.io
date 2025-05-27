@@ -16,7 +16,8 @@ const processImageUrl = (url) => {
   
   // Cloudinary URL인 경우 이미지 최적화
   if (url.includes('cloudinary.com')) {
-    return url.replace('/upload/', '/upload/w_800,c_scale,q_auto,f_auto/');
+    // 더 강력한 이미지 최적화
+    return url.replace('/upload/', '/upload/w_600,c_scale,q_80,f_auto,dpr_auto,fl_progressive,fl_force_strip/');
   }
   
   return `${STRAPI_URL}${url}`;
@@ -27,12 +28,21 @@ const lazyLoadImage = (imgElement, url) => {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        imgElement.src = url;
+        // 이미지 로딩 전에 작은 크기의 플레이스홀더 표시
+        imgElement.src = url.replace('/upload/', '/upload/w_100,c_scale,q_auto,f_auto,fl_progressive/');
+        
+        // 실제 이미지 로딩
+        const fullImage = new Image();
+        fullImage.onload = () => {
+          imgElement.src = url;
+        };
+        fullImage.src = url;
+        
         observer.unobserve(imgElement);
       }
     });
   }, {
-    rootMargin: '50px 0px',
+    rootMargin: '100px 0px',
     threshold: 0.1
   });
   
@@ -58,7 +68,7 @@ const fetchWithCache = async (url, cacheKey) => {
   }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5초 타임아웃
+  const timeoutId = setTimeout(() => controller.abort(), 3000); // 3초로 타임아웃 감소
 
   try {
     const response = await fetch(url, {
@@ -69,7 +79,8 @@ const fetchWithCache = async (url, cacheKey) => {
       },
       mode: 'cors',
       credentials: 'omit',
-      signal: controller.signal
+      signal: controller.signal,
+      cache: 'force-cache' // 브라우저 캐시 강제 사용
     });
 
     clearTimeout(timeoutId);
@@ -79,9 +90,26 @@ const fetchWithCache = async (url, cacheKey) => {
     }
 
     const data = await response.json();
-    cache[cacheKey] = data;
+    
+    // 데이터 구조 단순화
+    const simplifiedData = {
+      data: data.data.map(item => ({
+        id: item.id,
+        title: item.title || '',
+        mainImage: item.mainImage?.url || '',
+        popupText: item.popupText || '',
+        categoryId: item.categoryId || '',
+        section: item.section?.map(section => ({
+          id: section.id,
+          sectionTitle: section.sectionTitle || '',
+          images: section.images?.map(img => img?.url) || []
+        })) || []
+      }))
+    };
+
+    cache[cacheKey] = simplifiedData;
     cache.lastFetch = Date.now();
-    return data;
+    return simplifiedData;
   } catch (error) {
     clearTimeout(timeoutId);
     if (error.name === 'AbortError') {
@@ -221,23 +249,18 @@ export async function loadGalleryData() {
 // 카테고리 데이터 로딩 함수
 export async function loadCategoriesData() {
   try {
-    const endpoints = [
-      {
-        url: 'https://strapi-fvc4.onrender.com/api/alls?populate[mainImage][fields][0]=url&populate[section][populate][images][fields][0]=url&fields[0]=title&fields[1]=categoryId&fields[2]=popupText',
-        key: 'categories'
-      }
-    ];
+    const data = await fetchWithCache(
+      'https://strapi-fvc4.onrender.com/api/alls?populate[mainImage][fields][0]=url&populate[section][populate][images][fields][0]=url&fields[0]=title&fields[1]=categoryId&fields[2]=popupText',
+      'categories'
+    );
 
-    const data = await loadDataInParallel(endpoints);
-    const result = data.categories;
+    if (!data?.data) return [];
 
-    if (!result?.data) return [];
-
-    return result.data.map(item => {
-      const mainImageUrl = processImageUrl(item.mainImage?.url);
+    return data.data.map(item => {
+      const mainImageUrl = processImageUrl(item.mainImage);
 
       const sections = item.section?.map(section => {
-        const sectionImages = section.images?.map(img => processImageUrl(img?.url)) || [];
+        const sectionImages = section.images?.map(img => processImageUrl(img)) || [];
 
         if (sectionImages.length === 0 && mainImageUrl) {
           sectionImages.push(mainImageUrl);
