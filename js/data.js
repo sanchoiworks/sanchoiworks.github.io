@@ -57,35 +57,74 @@ const fetchWithCache = async (url, cacheKey) => {
     return cache[cacheKey];
   }
 
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
-    mode: 'cors',
-    credentials: 'omit'
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5초 타임아웃
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      mode: 'cors',
+      credentials: 'omit',
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    cache[cacheKey] = data;
+    cache.lastFetch = Date.now();
+    return data;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      console.error('Request timeout');
+      return cache[cacheKey] || null;
+    }
+    throw error;
   }
+};
 
-  const data = await response.json();
-  cache[cacheKey] = data;
-  cache.lastFetch = Date.now();
-  return data;
+// 병렬 데이터 로딩 함수
+const loadDataInParallel = async (endpoints) => {
+  try {
+    const results = await Promise.allSettled(
+      endpoints.map(({ url, key }) => fetchWithCache(url, key))
+    );
+
+    return results.reduce((acc, result, index) => {
+      if (result.status === 'fulfilled' && result.value) {
+        acc[endpoints[index].key] = result.value;
+      }
+      return acc;
+    }, {});
+  } catch (error) {
+    console.error('Error in parallel data loading:', error);
+    return {};
+  }
 };
 
 // 메인 데이터 로딩 함수
 export async function loadMainData() {
   try {
-    const result = await fetchWithCache(
-      'https://strapi-fvc4.onrender.com/api/mains?populate[mainImage][fields][0]=url&populate[section][populate][images][fields][0]=url&fields[0]=title&fields[1]=popupText',
-      'main'
-    );
+    const endpoints = [
+      {
+        url: 'https://strapi-fvc4.onrender.com/api/mains?populate[mainImage][fields][0]=url&populate[section][populate][images][fields][0]=url&fields[0]=title&fields[1]=popupText',
+        key: 'main'
+      }
+    ];
 
-    if (!result.data || !Array.isArray(result.data)) {
+    const data = await loadDataInParallel(endpoints);
+    const result = data.main;
+
+    if (!result?.data || !Array.isArray(result.data)) {
       throw new Error('Invalid data structure received from API');
     }
 
@@ -152,12 +191,19 @@ async function loadSectionDetails(sectionId) {
 // 갤러리 데이터 로딩 함수
 export async function loadGalleryData() {
   try {
-    const data = await fetchWithCache(
-      `${STRAPI_URL}/api/alls?populate[mainImage][fields][0]=url&fields[0]=title&fields[1]=categoryId&fields[2]=popupText`,
-      'categories'
-    );
+    const endpoints = [
+      {
+        url: `${STRAPI_URL}/api/alls?populate[mainImage][fields][0]=url&fields[0]=title&fields[1]=categoryId&fields[2]=popupText`,
+        key: 'categories'
+      }
+    ];
 
-    return data.data
+    const data = await loadDataInParallel(endpoints);
+    const result = data.categories;
+
+    if (!result?.data) return [];
+
+    return result.data
       .filter(item => item)
       .map(item => ({
         id: item.id,
@@ -175,12 +221,19 @@ export async function loadGalleryData() {
 // 카테고리 데이터 로딩 함수
 export async function loadCategoriesData() {
   try {
-    const data = await fetchWithCache(
-      'https://strapi-fvc4.onrender.com/api/alls?populate[mainImage][fields][0]=url&populate[section][populate][images][fields][0]=url&fields[0]=title&fields[1]=categoryId&fields[2]=popupText',
-      'categories'
-    );
+    const endpoints = [
+      {
+        url: 'https://strapi-fvc4.onrender.com/api/alls?populate[mainImage][fields][0]=url&populate[section][populate][images][fields][0]=url&fields[0]=title&fields[1]=categoryId&fields[2]=popupText',
+        key: 'categories'
+      }
+    ];
 
-    return data.data.map(item => {
+    const data = await loadDataInParallel(endpoints);
+    const result = data.categories;
+
+    if (!result?.data) return [];
+
+    return result.data.map(item => {
       const mainImageUrl = processImageUrl(item.mainImage?.url);
 
       const sections = item.section?.map(section => {
