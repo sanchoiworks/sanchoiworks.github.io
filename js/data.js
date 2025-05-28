@@ -89,35 +89,27 @@ export async function loadMainData() {
   if (cachedData) return cachedData;
 
   try {
-    // 필요한 필드만 선택적으로 가져오도록 수정
-    const query = 'populate[mainImage][fields][0]=url&populate[section][populate][images][fields][0]=url&fields[0]=id&fields[1]=projectID&fields[2]=title&fields[3]=popupText';
-    
-    console.log('Fetching main data from:', `${STRAPI_URL}/api/mains?${query}`);
-    const response = await fetch(`${STRAPI_URL}/api/mains?${query}`);
-    console.log('Response status:', response.status);
-    if (!response.ok) {
-      console.error('Failed to fetch main data. Status:', response.status);
-      throw new Error(`Failed to fetch main data: ${response.status}`);
-    }
+    const response = await fetch(
+      `${STRAPI_URL}/api/mains?populate[mainImage]=true&populate[section][populate][images]=true`
+    );
+    if (!response.ok) throw new Error('Failed to fetch main data');
     const result = await response.json();
-    console.log('Received data:', result);
 
     if (!result.data || !Array.isArray(result.data)) {
-      console.error('Invalid data structure:', result);
       throw new Error('Invalid data structure received from API');
     }
 
     const processedData = result.data.map(item => {
-      const mainImageUrl = processImageUrl(item.attributes?.mainImage?.data?.attributes?.url);
-      const sections = processSections(item.attributes?.section || [], mainImageUrl);
+      const mainImageUrl = processImageUrl(item.mainImage?.url);
+      const sections = processSections(item.section, mainImageUrl);
 
       return {
         id: item.id,
-        projectID: item.attributes?.projectID ?? item.id,
-        title: item.attributes?.title ?? '',
+        projectID: item.projectID ?? item.id,
+        title: item.title ?? '',
         mainImage: mainImageUrl,
         sections,
-        popupText: item.attributes?.popupText ?? '',
+        popupText: item.popupText ?? '',
       };
     });
 
@@ -136,10 +128,9 @@ export async function loadAllData() {
   if (cachedData) return cachedData;
 
   try {
-    // 필요한 필드만 선택적으로 가져오도록 수정
-    const query = 'populate[mainImage][fields][0]=url&populate[section][populate][images][fields][0]=url&fields[0]=id&fields[1]=title&fields[2]=categoryId&fields[3]=popupText';
-    
-    const response = await fetch(`${STRAPI_URL}/api/alls?${query}`);
+    const response = await fetch(
+      `${STRAPI_URL}/api/alls?populate[mainImage]=true&populate[section][populate][images]=true`
+    );
     if (!response.ok) throw new Error('Failed to fetch all data');
     const result = await response.json();
 
@@ -148,17 +139,17 @@ export async function loadAllData() {
     }
 
     const processedData = result.data.map(item => {
-      const mainImageUrl = processImageUrl(item.attributes?.mainImage?.data?.attributes?.url);
-      const sections = processSections(item.attributes?.section || [], mainImageUrl);
+      const mainImageUrl = processImageUrl(item.mainImage?.url);
+      const sections = processSections(item.section, mainImageUrl);
 
       return {
         id: item.id,
-        name: item.attributes?.title || '',
-        title: item.attributes?.title || '',
+        name: item.title || '',
+        title: item.title || '',
         mainImage: mainImageUrl,
         sections,
-        popupText: item.attributes?.popupText || '',
-        categoryId: item.attributes?.categoryId || '',
+        popupText: item.popupText || '',
+        categoryId: item.categoryId || '',
       };
     });
 
