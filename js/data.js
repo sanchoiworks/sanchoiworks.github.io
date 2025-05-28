@@ -8,19 +8,49 @@ const cache = {
   maxAge: 5 * 60 * 1000, // 5분 캐시
 };
 
-// 캐시된 데이터 가져오기
-const getCachedData = (key) => {
-  const timestamp = cache.timestamp.get(key);
-  if (timestamp && Date.now() - timestamp < cache.maxAge) {
-    return cache.data.get(key);
-  }
-  return null;
-};
-
 // 데이터 캐시하기
 const setCachedData = (key, data) => {
   cache.data.set(key, data);
   cache.timestamp.set(key, Date.now());
+  
+  // 브라우저의 localStorage에도 캐시 저장
+  try {
+    localStorage.setItem(`cache_${key}`, JSON.stringify({
+      data,
+      timestamp: Date.now()
+    }));
+  } catch (e) {
+    console.warn('Failed to cache data in localStorage:', e);
+  }
+};
+
+// 캐시된 데이터 가져오기
+const getCachedData = (key) => {
+  const cachedData = cache.data.get(key);
+  const timestamp = cache.timestamp.get(key);
+  
+  // 메모리 캐시 확인
+  if (cachedData && timestamp && Date.now() - timestamp < cache.maxAge) {
+    return cachedData;
+  }
+  
+  // localStorage 캐시 확인
+  try {
+    const storedCache = localStorage.getItem(`cache_${key}`);
+    if (storedCache) {
+      const { data, timestamp } = JSON.parse(storedCache);
+      if (Date.now() - timestamp < cache.maxAge) {
+        // 메모리 캐시 업데이트
+        cache.data.set(key, data);
+        cache.timestamp.set(key, timestamp);
+        return data;
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to read cache from localStorage:', e);
+  }
+  
+  return null;
 };
 
 // 이미지 URL 처리 헬퍼 함수
@@ -29,7 +59,7 @@ const processImageUrl = (url) => {
   if (url.startsWith('http://') || url.startsWith('https://')) {
     // 이미지 최적화 파라미터 추가
     const hasQuery = url.includes('?');
-    const optimizationParams = 'width=800&quality=80&format=webp';
+    const optimizationParams = 'width=800&quality=80&format=webp&cache=3600';
     return `${url}${hasQuery ? '&' : '?'}${optimizationParams}`;
   }
   return `${STRAPI_URL}${url}`;

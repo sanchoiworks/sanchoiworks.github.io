@@ -78,11 +78,11 @@ async function initializeSwiper(sections) {
 
     // 모든 이미지 주소를 배열로 수집
     const allImages = sections.flatMap(section => section.images || []);
-
     console.log('All images to be loaded:', allImages);
 
-    // 이미지 프리로드
-    await Promise.all(allImages.map(src => {
+    // 현재 섹션의 이미지만 먼저 프리로드
+    const currentSectionImages = sections[0]?.images || [];
+    await Promise.all(currentSectionImages.map(src => {
         return new Promise((resolve) => {
             const img = new Image();
             img.onload = () => resolve();
@@ -103,9 +103,17 @@ async function initializeSwiper(sections) {
         img.src = image;
         img.alt = `Slide ${index + 1}`;
         img.loading = 'lazy';
+        img.decoding = 'async';
 
         slide.appendChild(img);
         swiperWrapper.appendChild(slide);
+    });
+
+    // 나머지 이미지들은 백그라운드에서 점진적으로 로드
+    const remainingImages = allImages.slice(currentSectionImages.length);
+    remainingImages.forEach(src => {
+        const img = new Image();
+        img.src = src;
     });
 
     // 총 슬라이드 수 (원본 개수)
@@ -125,7 +133,6 @@ async function initializeSwiper(sections) {
         watchSlidesProgress: true,
         on: {
             init: function() {
-                // DOM 렌더링 후 updateSlideCounter 호출
                 requestAnimationFrame(() => {
                     updateSlideCounter(totalSlides);
                     updateActiveTab(getCurrentSectionIndex());
