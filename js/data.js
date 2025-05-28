@@ -26,22 +26,12 @@ const setCachedData = (key, data) => {
 // 이미지 URL 처리 헬퍼 함수
 const processImageUrl = (url) => {
   if (!url) return PLACEHOLDER_IMAGE;
-
-  // If URL already contains http(s), return as is
   if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url;
+    // 이미지 최적화 파라미터 추가
+    const hasQuery = url.includes('?');
+    const optimizationParams = 'width=800&quality=80&format=webp';
+    return `${url}${hasQuery ? '&' : '?'}${optimizationParams}`;
   }
-
-  // Cloudinary URL인 경우 최적화 파라미터 추가
-  if (url.includes('cloudinary.com')) {
-    if (!url.includes('f_auto') && !url.includes('q_auto')) {
-      const hasQuery = url.includes('?');
-      return `${url}${hasQuery ? '&' : '?'}f_auto&q_auto&w=800`;
-    }
-    return url;
-  }
-
-  // Strapi URL인 경우 STRAPI_URL 추가
   return `${STRAPI_URL}${url}`;
 };
 
