@@ -1,4 +1,4 @@
-const STRAPI_URL = 'https://strapi-fvc4.onrender.com'; // 본인 Strapi 주소로 변경하세요
+const STRAPI_URL = 'https://strapi-production-af72.up.railway.app'; // 본인 Strapi 주소로 변경하세요
 const PLACEHOLDER_IMAGE = '/path/to/placeholder.jpg'; // 기본 이미지 경로
 
 // 캐시 구현
@@ -89,13 +89,20 @@ export async function loadMainData() {
   if (cachedData) return cachedData;
 
   try {
+    console.log('Fetching main data from:', `${STRAPI_URL}/api/mains?populate[mainImage]=true&populate[section][populate][images]=true`);
     const response = await fetch(
       `${STRAPI_URL}/api/mains?populate[mainImage]=true&populate[section][populate][images]=true`
     );
-    if (!response.ok) throw new Error('Failed to fetch main data');
+    console.log('Response status:', response.status);
+    if (!response.ok) {
+      console.error('Failed to fetch main data. Status:', response.status);
+      throw new Error(`Failed to fetch main data: ${response.status}`);
+    }
     const result = await response.json();
+    console.log('Received data:', result);
 
     if (!result.data || !Array.isArray(result.data)) {
+      console.error('Invalid data structure:', result);
       throw new Error('Invalid data structure received from API');
     }
 
