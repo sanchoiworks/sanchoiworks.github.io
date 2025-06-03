@@ -59,10 +59,19 @@ const processImageUrl = (url) => {
   if (url.startsWith('http://') || url.startsWith('https://')) {
     // 이미지 최적화 파라미터 추가
     const hasQuery = url.includes('?');
-    const optimizationParams = 'width=800&quality=80&format=webp&cache=3600';
+    const optimizationParams = 'width=400&quality=80&format=webp&cache=3600';
     return `${url}${hasQuery ? '&' : '?'}${optimizationParams}`;
   }
   return `${STRAPI_URL}${url}`;
+};
+
+// 이미지 lazy loading을 위한 data-src 속성 추가 헬퍼 함수
+const addLazyLoading = (url) => {
+  return {
+    src: PLACEHOLDER_IMAGE,
+    'data-src': url,
+    loading: 'lazy'
+  };
 };
 
 // 섹션 데이터 처리 헬퍼 함수
@@ -71,14 +80,14 @@ const processSections = (sections, mainImageUrl) => {
     return [{
       id: 'main',
       sectionTitle: 'Main',
-      images: [mainImageUrl],
+      images: [addLazyLoading(mainImageUrl)],
     }];
   }
 
   return sections.map(section => ({
     id: section.id,
     sectionTitle: section.sectionTitle || '',
-    images: section.images?.map(img => processImageUrl(img?.url)) || [mainImageUrl],
+    images: section.images?.map(img => addLazyLoading(processImageUrl(img?.url))) || [addLazyLoading(mainImageUrl)],
   }));
 };
 

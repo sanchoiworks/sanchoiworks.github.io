@@ -535,7 +535,7 @@ async function updateItemsList(category) {
         // 이미지가 없는 경우 메인 이미지 표시
         const gridItem = document.createElement('div');
         gridItem.className = 'grid-item';
-        const imagePath = item.mainImage || 'images/1.jpg';
+        const imagePath = item.mainImage || './images/1.jpg';
         gridItem.innerHTML = `
           <img src="${imagePath}" alt="${item.name || item.title || 'Untitled'}">
           <div class="title">${item.name || item.title || 'Untitled'}</div>
@@ -584,14 +584,14 @@ function updateGrid(items) {
 
     const img = document.createElement('img');
     // 이미지 경로 수정
-    const imagePath = item.mainImage ? item.mainImage : 'images/1.jpg';
+    const imagePath = item.mainImage ? item.mainImage : './images/1.jpg';
     img.src = imagePath;
     img.alt = item.name || '';
     
     // 이미지 로드 에러 처리
     img.onerror = () => {
       console.error('Failed to load image:', imagePath);
-      img.src = 'images/1.jpg'; // 기본 이미지로 대체
+      img.src = './images/1.jpg'; // 기본 이미지로 대체
     };
 
     gridItem.appendChild(img);
