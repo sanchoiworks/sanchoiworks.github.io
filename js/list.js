@@ -501,7 +501,7 @@ async function updateItemsList(category) {
                   console.error('Item has no name or title:', item);
                   return;
                 }
-                window.location.href = `detail.html?title=${encodeURIComponent(itemName)}&source=list`;
+                window.location.href = `detail.html?id=${item.id || item.projectID}&source=list`;
               });
               
               gridContainer.appendChild(gridItem);
@@ -526,7 +526,7 @@ async function updateItemsList(category) {
               console.error('Item has no name or title:', item);
               return;
             }
-            window.location.href = `detail.html?title=${encodeURIComponent(itemName)}&source=list`;
+            window.location.href = `detail.html?id=${item.id || item.projectID}&source=list`;
           });
           
           gridContainer.appendChild(gridItem);
@@ -549,7 +549,7 @@ async function updateItemsList(category) {
             console.error('Item has no name or title:', item);
             return;
           }
-          window.location.href = `detail.html?title=${encodeURIComponent(itemName)}&source=list`;
+          window.location.href = `detail.html?id=${item.id || item.projectID}&source=list`;
         });
         
         gridContainer.appendChild(gridItem);
@@ -601,7 +601,7 @@ function updateGrid(items) {
         console.error('Item has no name:', item);
         return;
       }
-      window.location.href = `detail.html?title=${encodeURIComponent(item.name)}&source=list`;
+      window.location.href = `detail.html?id=${item.id || item.projectID}&source=list`;
     });
 
     gridContainer.appendChild(gridItem);
@@ -614,7 +614,7 @@ function navigateToDetail(item) {
     console.error('Item has no name:', item);
     return;
   }
-  window.location.href = `detail.html?title=${encodeURIComponent(item.name)}&source=list`;
+  window.location.href = `detail.html?id=${item.id || item.projectID}&source=list`;
 }
 
 // 스크롤 이벤트 핸들러 추가

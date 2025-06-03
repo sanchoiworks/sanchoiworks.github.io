@@ -71,20 +71,10 @@ async function initializeMainPage() {
         e.stopPropagation();
         const slide = img.closest('.swiper-slide');
         const itemTitle = slide.dataset.title;
-        console.log('Clicked item data:', {
-          title: itemTitle,
-          dataset: slide.dataset,
-        });
         if (itemTitle) {
-          // 현재 활성화된 슬라이드의 실제 인덱스를 사용
           const realIndex = swiper.realIndex;
           const activeItem = items[realIndex];
-          console.log('Active slide data:', {
-            index: realIndex,
-            item: activeItem,
-          });
-          // title을 사용하여 디테일 페이지로 이동
-          window.location.href = `detail.html?title=${encodeURIComponent(activeItem.title)}&source=main`;
+          window.location.href = `detail.html?id=${activeItem.id || activeItem.projectID}&source=main`;
         } else {
           console.error('Item title not found');
         }

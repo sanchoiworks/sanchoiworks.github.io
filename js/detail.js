@@ -17,22 +17,12 @@ async function initializeDetailPage() {
         // source에 따라 다른 API를 사용하여 데이터 로드
         if (source === 'main') {
             const mainData = await loadMainData();
-            project = mainData.find(item => {
-                if (id) {
-                    return item.projectID === parseInt(id);
-                }
-                return item.title === title;
-            });
+            project = mainData.find(item => item.id === parseInt(id) || item.projectID === parseInt(id));
         } else {
             // list 페이지에서 온 경우
             const projects = await loadProjectsData();
             console.log('Loaded projects:', projects);
-            project = projects.find(p => {
-                if (id) {
-                    return p.id === parseInt(id);
-                }
-                return p.title === title || p.name === title;
-            });
+            project = projects.find(p => p.id === parseInt(id) || p.projectID === parseInt(id));
         }
 
         if (!project) {
