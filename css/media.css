@@ -72,6 +72,7 @@
     height: 100%;
   }
 
+
   /* Side Navigation - Moved to Top */
   .side-nav {
     position: fixed;
@@ -302,10 +303,10 @@
     grid-template-columns: 1fr;
     overflow-y: auto;
   }
-
+/* 
   .grid-item{
     height: calc((100vh - 60px - 48px) / 4);
-  }
+  } */
 
   .category-menu h2{
     font-size: 12px;
