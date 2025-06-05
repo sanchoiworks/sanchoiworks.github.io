@@ -35,6 +35,42 @@
     font-size: 11px;
   }
 
+  /* List Page */
+  .list-page {
+    padding: 52px 20px;
+  }
+  .list-page .container {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    gap: 0;
+    padding: 0;
+  }
+  .list-page .list {
+    width: 50%;
+    height: 100vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  .list-page .grid-container {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    height: calc(100vh - 60px);
+    gap: 16px;
+    max-height: 100vh;
+    margin-top: 0;
+    padding: 0;
+    grid-template-columns: repeat(2, 1fr);
+    overflow-y: auto;
+  }
+
+  .grid-item {
+    /* height: calc((100vh - 60px - 48px) / 4); */
+    height: 100%;
+  }
 
   /* Side Navigation - Moved to Top */
   .side-nav {
@@ -121,7 +157,6 @@
     margin-top: 80px;
   }
 
-
   /* About Page*/  
   .about-content {
     margin: 77px 20px 20px;
@@ -140,7 +175,6 @@
     left: 36px;
     z-index: 2;
   }
-
 }
 
 /* Media Queries for Small Mobile Devices */
@@ -175,7 +209,6 @@
     padding: 15px;
   }
 
-
   #detail-text-modal .modal-text {
     font-size: 11px;
     line-height: 1.75;
@@ -188,7 +221,6 @@
     top: 16px;
     right: 16px;
   }
-
 
   .date-tabs{
     right: 16px;
@@ -271,9 +303,9 @@
     overflow-y: auto;
   }
 
- .grid-item{
-  height: calc((100vh - 60px - 48px) / 4);
- } 
+  .grid-item{
+    height: calc((100vh - 60px - 48px) / 4);
+  }
 
   .category-menu h2{
     font-size: 12px;
@@ -284,7 +316,6 @@
     font-size: 12px;
     margin-bottom: 2px;
   }
-
 
   /* Detail Container - align with date-tabs on small devices */
   .detail-container {
