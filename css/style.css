@@ -185,6 +185,8 @@ header {
   overflow-y: auto;
   align-items: start;
   align-content: start;
+  position: relative;
+  z-index: 1;
 }
 
 .grid-container.active {
@@ -212,7 +214,6 @@ header {
 .grid-item {
   position: relative;
   width: 100%;
-  height: calc((100vh - 129px - 72px) / 4);
   cursor: pointer;
 }
 
@@ -562,3 +563,31 @@ html {
 .project-links a:hover {
   background: #0056b3;
 }
+
+.grid-control {
+  position: absolute;
+  top: 30px;
+  right: 0px;
+  display: flex;
+  gap: 12px;
+  grid-column: 3 / 7;
+}
+
+.grid-control .grid-number {
+  background: none;
+  border: none;
+  z-index: 9999;
+  font-family: 'Mercure', Georgia, serif;
+  font-size: 12px;
+  cursor: pointer;
+  color: #999;
+  transition: color 0.3s ease;
+  padding: 0;
+}
+
+.grid-control .grid-number:hover,
+.grid-control .grid-number.active {
+  color: #000;
+  z-index: 9999;
+}
+

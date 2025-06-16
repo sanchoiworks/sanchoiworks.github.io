@@ -86,7 +86,7 @@ async function loadCategories() {
       // 다른 카테고리 처리
       const categoryIndex = categories.findIndex(cat => cat.categoryId.toLowerCase() === categoryId.toLowerCase());
       if (categoryIndex !== -1) {
-        await changeCategory(categoryIndex);
+        await changeCategory(categoryId);
       } else {
         showAllCategory();
       }
@@ -134,7 +134,7 @@ function setupCategoryMenu() {
 
   // Works 클릭 이벤트 추가
   worksHeading.addEventListener('click', () => {
-    const spaceCategory = categories.find(cat => cat.categoryId.toLowerCase() === 'space');
+    const spaceCategory = categories.find(cat => cat.categoryId && cat.categoryId.trim().toLowerCase() === 'space');
     if (spaceCategory) {
       // Works 하위 카테고리 열기
       const subcategoriesList = document.querySelector('.category-menu ul');
@@ -152,17 +152,17 @@ function setupCategoryMenu() {
       worksHeading.style.color = '#000';
       updateItemsList(spaceCategory);
       updateGrid(spaceCategory);
-      changeCategory(0);
+      changeCategory('space');
     }
   });
 
-  // Works 하위 카테고리 생성
-  const subcategories = [
-    { categoryId: 'space' },
-    { categoryId: 'brand' },
-    { categoryId: 'object' },
-    { categoryId: 'figure' }
-  ];
+  // Works 하위 카테고리 생성 (데이터에서 추출)
+  const worksCategoryIds = ['space', 'brand', 'object', 'figure'];
+  const subcategories = categories
+    .map(cat => cat.categoryId)
+    .filter(id => id && worksCategoryIds.includes(id.trim().toLowerCase()))
+    .map(id => ({ categoryId: id }));
+
   const subcategoriesList = document.createElement('ul');
   subcategoriesList.style.paddingLeft = '20px';
   subcategoriesList.classList.add('active');
@@ -195,11 +195,11 @@ function setupCategoryMenu() {
       worksHeading.style.color = '#000';
       worksHeading.style.transition = '';
 
-      const category = categories.find(cat => cat.categoryId.toLowerCase() === sub.categoryId.toLowerCase());
+      const category = categories.find(cat => cat.categoryId && cat.categoryId.trim().toLowerCase() === sub.categoryId.trim().toLowerCase());
       if (category) {
         updateItemsList(category);
         updateGrid(category);
-        changeCategory(index);
+        changeCategory(sub.categoryId);
       }
     });
 
@@ -209,13 +209,12 @@ function setupCategoryMenu() {
   worksCategory.appendChild(subcategoriesList);
   categoryMenu.appendChild(worksCategory);
 
-  // 나머지 카테고리 추가
-  const otherCategories = [
-    { categoryId: 'personal' },
-    { categoryId: 'exhibitions' },
-    { categoryId: 'a letter from' },
-    { categoryId: 'frames' }
-  ];
+  // 나머지 카테고리 동적 생성 (Works에 없는 것만)
+  const worksCategoryIdSet = new Set(worksCategoryIds);
+  const otherCategories = categories
+    .map(cat => cat.categoryId)
+    .filter(id => id && !worksCategoryIdSet.has(id.trim().toLowerCase()))
+    .map(id => ({ categoryId: id }));
 
   otherCategories.forEach((cat, index) => {
     const categoryElement = document.createElement('div');
@@ -223,8 +222,9 @@ function setupCategoryMenu() {
 
     const heading = document.createElement('h2');
     // ID를 대소문자로 변환하여 표시 이름으로 사용
-    heading.textContent =
-      cat.categoryId === 'a letter from' ? 'A letter from' : cat.categoryId.charAt(0).toUpperCase() + cat.categoryId.slice(1);
+    heading.textContent = cat.categoryId
+      ? cat.categoryId.charAt(0).toUpperCase() + cat.categoryId.slice(1)
+      : '';
     heading.style.color = '#999';
     heading.style.cursor = 'pointer';
 
@@ -249,11 +249,11 @@ function setupCategoryMenu() {
       heading.style.color = '#000';
       heading.style.transition = '';
 
-      const category = categories.find(c => c.categoryId.toLowerCase() === cat.categoryId.toLowerCase());
+      const category = categories.find(c => c.categoryId && c.categoryId.trim().toLowerCase() === cat.categoryId.trim().toLowerCase());
       if (category) {
         updateItemsList(category);
         updateGrid(category);
-        changeCategory(index + subcategories.length);
+        changeCategory(cat.categoryId);
       }
     });
 
@@ -293,24 +293,30 @@ function setupWheelEvent() {
   );
 }
 
-async function changeCategory(index) {
-  if (index === currentCategoryIndex) return;
+async function changeCategory(categoryId) {
+  if (!categoryId) return;
 
   // 현재 그리드 컨테이너에 전환 효과 적용
   const gridContainer = document.querySelector('.grid-container');
   if (!gridContainer) return;
-  
   gridContainer.classList.remove('active');
 
-  // 전환 효과가 끝난 후 카테고리 변경
   return new Promise(resolve => {
     setTimeout(() => {
+      // 카테고리 인덱스 갱신
+      const worksCategoryIds = ['space', 'brand', 'object', 'figure'];
+      const otherCategories = categories
+        .map(cat => cat.categoryId)
+        .filter(id => id && !worksCategoryIds.includes(id.trim().toLowerCase()));
+      let index = -1;
+      if (worksCategoryIds.includes(categoryId.trim().toLowerCase())) {
+        index = worksCategoryIds.indexOf(categoryId.trim().toLowerCase());
+      } else if (otherCategories.map(id => id.trim().toLowerCase()).includes(categoryId.trim().toLowerCase())) {
+        index = worksCategoryIds.length + otherCategories.map(id => id.trim().toLowerCase()).indexOf(categoryId.trim().toLowerCase());
+      }
       currentCategoryIndex = index;
 
-      const subcategories = ['space', 'brand', 'object', 'figure'];
-      const otherCategories = ['personal', 'exhibitions', 'a letter from', 'frames'];
-
-      // Works 하위 카테고리 요소 가져오기
+      // 메뉴 상태 업데이트
       const subcategoriesList = document.querySelector('.category-menu ul');
       const worksHeading = document.querySelector('.category:nth-child(2) h2');
       const allHeading = document.querySelector('.category:nth-child(1) h2');
@@ -321,47 +327,11 @@ async function changeCategory(index) {
         return;
       }
 
-      // Personal 이후 카테고리로 넘어갈 때
-      if (index >= subcategories.length) {
-        // Works 하위 카테고리 닫기
-        subcategoriesList.classList.add('collapsed');
-
-        document.querySelectorAll('.category-menu li').forEach(li => {
-          li.style.color = '#999';
-        });
-        document.querySelectorAll('.category h2').forEach(h => {
-          h.classList.remove('active');
-          h.style.color = '#999';
-        });
-
-        // 현재 카테고리의 헤딩 찾아서 활성화
-        const currentOtherCategory = otherCategories[index - subcategories.length];
-        const currentHeading = Array.from(document.querySelectorAll('.category h2')).find(
-          h =>
-            h.textContent ===
-            (currentOtherCategory === 'a letter from'
-              ? 'A letter from'
-              : currentOtherCategory.charAt(0).toUpperCase() + currentOtherCategory.slice(1))
-        );
-
-        if (currentHeading) {
-          currentHeading.classList.add('active');
-          currentHeading.style.color = '#000';
-        }
-
-        // 현재 카테고리 데이터 업데이트
-        const currentCategory = categories.find(cat => cat.categoryId.toLowerCase() === currentOtherCategory.toLowerCase());
-        if (currentCategory) {
-          updateItemsList(currentCategory);
-          updateGrid(currentCategory);
-        }
-      } else {
+      if (worksCategoryIds.includes(categoryId.trim().toLowerCase())) {
         // Works 하위 카테고리 열기
         subcategoriesList.classList.remove('collapsed');
-
-        // Works 하위 카테고리 활성화
         document.querySelectorAll('.category-menu li').forEach((li, i) => {
-          li.style.color = i === index ? '#000' : '#999';
+          li.style.color = worksCategoryIds[i] === categoryId.trim().toLowerCase() ? '#000' : '#999';
         });
         document.querySelectorAll('.category h2').forEach(h => {
           h.classList.remove('active');
@@ -369,22 +339,35 @@ async function changeCategory(index) {
         });
         worksHeading.classList.add('active');
         worksHeading.style.color = '#000';
-
-        // 현재 카테고리 데이터 업데이트
-        const currentCategoryId = subcategories[index];
-        const category = categories.find(cat => cat.categoryId.toLowerCase() === currentCategoryId.toLowerCase());
-        if (category) {
-          updateItemsList(category);
-          updateGrid(category);
+      } else if (otherCategories.map(id => id.trim().toLowerCase()).includes(categoryId.trim().toLowerCase())) {
+        // Works 하위 카테고리 닫기
+        subcategoriesList.classList.add('collapsed');
+        document.querySelectorAll('.category-menu li').forEach(li => {
+          li.style.color = '#999';
+        });
+        document.querySelectorAll('.category h2').forEach(h => {
+          h.classList.remove('active');
+          h.style.color = '#999';
+        });
+        // 현재 카테고리의 헤딩 찾아서 활성화
+        const currentHeading = Array.from(document.querySelectorAll('.category h2')).find(
+          h => h.textContent.trim().toLowerCase() === categoryId.trim().toLowerCase()
+        );
+        if (currentHeading) {
+          currentHeading.classList.add('active');
+          currentHeading.style.color = '#000';
         }
+      }
+
+      // 현재 카테고리 데이터 업데이트
+      const currentCategory = categories.find(cat => cat.categoryId && cat.categoryId.trim().toLowerCase() === categoryId.trim().toLowerCase());
+      if (currentCategory) {
+        updateItemsList(currentCategory);
+        updateGrid(currentCategory);
       }
 
       // URL 파라미터 업데이트
       const urlParams = new URLSearchParams(window.location.search);
-      const categoryId =
-        index >= subcategories.length
-          ? otherCategories[index - subcategories.length]
-          : subcategories[index];
       urlParams.set('category', categoryId);
       const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
       window.history.pushState({}, '', newUrl);
@@ -666,4 +649,33 @@ window.addEventListener('resize', wrapListForMobile);
 // DOMContentLoaded에서 loadCategories 후 wrapListForMobile 호출
 document.addEventListener('DOMContentLoaded', () => {
   loadCategories();
+  setupGridControl();
 });
+
+function setupGridControl() {
+  const gridControl = document.querySelector('.grid-control');
+  const gridContainer = document.querySelector('.grid-container');
+  
+  if (!gridControl || !gridContainer) return;
+
+  // 초기 상태 설정 (4개 컬럼)
+  gridContainer.style.gridTemplateColumns = 'repeat(4, 1fr)';
+  gridControl.querySelector('[data-number="4"]').classList.add('active');
+
+  gridControl.addEventListener('click', (e) => {
+    const button = e.target.closest('.grid-number');
+    if (!button) return;
+
+    const number = parseInt(button.dataset.number);
+    if (isNaN(number)) return;
+
+    // Update active state
+    gridControl.querySelectorAll('.grid-number').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    button.classList.add('active');
+
+    // Update grid columns
+    gridContainer.style.gridTemplateColumns = `repeat(${number}, 1fr)`;
+  });
+}

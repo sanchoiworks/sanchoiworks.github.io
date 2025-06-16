@@ -180,6 +180,10 @@
     left: 36px;
     z-index: 2;
   }
+
+  .grid-control {
+    display: none;
+  }
 }
 
 /* Media Queries for Small Mobile Devices */
