@@ -158,10 +158,12 @@ function setupCategoryMenu() {
 
   // Works 하위 카테고리 생성 (데이터에서 추출)
   const worksCategoryIds = ['space', 'brand', 'object', 'figure'];
-  const subcategories = categories
-    .map(cat => cat.categoryId)
-    .filter(id => id && worksCategoryIds.includes(id.trim().toLowerCase()))
-    .map(id => ({ categoryId: id }));
+  const subcategories = [
+    { categoryId: 'space' },
+    { categoryId: 'brand' },
+    { categoryId: 'object' },
+    { categoryId: 'figure' }
+  ];
 
   const subcategoriesList = document.createElement('ul');
   subcategoriesList.style.paddingLeft = '20px';
@@ -195,11 +197,19 @@ function setupCategoryMenu() {
       worksHeading.style.color = '#000';
       worksHeading.style.transition = '';
 
-      const category = categories.find(cat => cat.categoryId && cat.categoryId.trim().toLowerCase() === sub.categoryId.trim().toLowerCase());
+      const category = categories.find(cat => 
+        cat.categoryId && 
+        cat.categoryId.trim().toLowerCase() === sub.categoryId.trim().toLowerCase()
+      );
+
       if (category) {
+        console.log('Found category:', category);
         updateItemsList(category);
         updateGrid(category);
         changeCategory(sub.categoryId);
+      } else {
+        console.log('Category not found for:', sub.categoryId);
+        console.log('Available categories:', categories);
       }
     });
 
@@ -296,6 +306,9 @@ function setupWheelEvent() {
 async function changeCategory(categoryId) {
   if (!categoryId) return;
 
+  console.log('Changing category to:', categoryId);
+  console.log('Available categories:', categories);
+
   // 현재 그리드 컨테이너에 전환 효과 적용
   const gridContainer = document.querySelector('.grid-container');
   if (!gridContainer) return;
@@ -305,15 +318,26 @@ async function changeCategory(categoryId) {
     setTimeout(() => {
       // 카테고리 인덱스 갱신
       const worksCategoryIds = ['space', 'brand', 'object', 'figure'];
-      const otherCategories = categories
-        .map(cat => cat.categoryId)
-        .filter(id => id && !worksCategoryIds.includes(id.trim().toLowerCase()));
       let index = -1;
-      if (worksCategoryIds.includes(categoryId.trim().toLowerCase())) {
-        index = worksCategoryIds.indexOf(categoryId.trim().toLowerCase());
-      } else if (otherCategories.map(id => id.trim().toLowerCase()).includes(categoryId.trim().toLowerCase())) {
-        index = worksCategoryIds.length + otherCategories.map(id => id.trim().toLowerCase()).indexOf(categoryId.trim().toLowerCase());
+
+      const normalizedCategoryId = categoryId.trim().toLowerCase();
+      if (worksCategoryIds.includes(normalizedCategoryId)) {
+        index = worksCategoryIds.indexOf(normalizedCategoryId);
+      } else {
+        // Works가 아닌 다른 카테고리들
+        const otherCategories = categories
+          .map(cat => cat.categoryId)
+          .filter(id => id && !worksCategoryIds.includes(id.trim().toLowerCase()));
+        
+        const otherIndex = otherCategories
+          .findIndex(id => id.trim().toLowerCase() === normalizedCategoryId);
+        
+        if (otherIndex !== -1) {
+          index = worksCategoryIds.length + otherIndex;
+        }
       }
+
+      console.log('Category index:', index);
       currentCategoryIndex = index;
 
       // 메뉴 상태 업데이트
@@ -327,11 +351,12 @@ async function changeCategory(categoryId) {
         return;
       }
 
-      if (worksCategoryIds.includes(categoryId.trim().toLowerCase())) {
+      if (worksCategoryIds.includes(normalizedCategoryId)) {
         // Works 하위 카테고리 열기
         subcategoriesList.classList.remove('collapsed');
         document.querySelectorAll('.category-menu li').forEach((li, i) => {
-          li.style.color = worksCategoryIds[i] === categoryId.trim().toLowerCase() ? '#000' : '#999';
+          const isActive = worksCategoryIds[i] === normalizedCategoryId;
+          li.style.color = isActive ? '#000' : '#999';
         });
         document.querySelectorAll('.category h2').forEach(h => {
           h.classList.remove('active');
@@ -339,7 +364,7 @@ async function changeCategory(categoryId) {
         });
         worksHeading.classList.add('active');
         worksHeading.style.color = '#000';
-      } else if (otherCategories.map(id => id.trim().toLowerCase()).includes(categoryId.trim().toLowerCase())) {
+      } else {
         // Works 하위 카테고리 닫기
         subcategoriesList.classList.add('collapsed');
         document.querySelectorAll('.category-menu li').forEach(li => {
@@ -349,9 +374,10 @@ async function changeCategory(categoryId) {
           h.classList.remove('active');
           h.style.color = '#999';
         });
+
         // 현재 카테고리의 헤딩 찾아서 활성화
         const currentHeading = Array.from(document.querySelectorAll('.category h2')).find(
-          h => h.textContent.trim().toLowerCase() === categoryId.trim().toLowerCase()
+          h => h.textContent.trim().toLowerCase() === normalizedCategoryId
         );
         if (currentHeading) {
           currentHeading.classList.add('active');
@@ -360,7 +386,12 @@ async function changeCategory(categoryId) {
       }
 
       // 현재 카테고리 데이터 업데이트
-      const currentCategory = categories.find(cat => cat.categoryId && cat.categoryId.trim().toLowerCase() === categoryId.trim().toLowerCase());
+      const currentCategory = categories.find(cat => 
+        cat.categoryId && 
+        cat.categoryId.trim().toLowerCase() === normalizedCategoryId
+      );
+
+      console.log('Current category:', currentCategory);
       if (currentCategory) {
         updateItemsList(currentCategory);
         updateGrid(currentCategory);
