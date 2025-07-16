@@ -72,13 +72,7 @@ async function loadCategories() {
           updateGrid(spaceCategory);
           currentCategoryIndex = 0;
 
-          // 전환 효과 적용
-          const gridContainer = document.querySelector('.grid-container');
-          if (gridContainer) {
-            setTimeout(() => {
-              gridContainer.classList.add('active');
-            }, 100);
-          }
+
           return;
         }
       }
@@ -403,11 +397,7 @@ async function changeCategory(categoryId) {
       const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
       window.history.pushState({}, '', newUrl);
 
-      // 전환 효과 다시 적용
-      setTimeout(() => {
-        gridContainer.classList.add('active');
-        resolve();
-      }, 40);
+      resolve();
     }, 300);
   });
 }
@@ -454,15 +444,6 @@ function showAllCategory() {
   urlParams.set('category', 'all');
   const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
   window.history.pushState({}, '', newUrl);
-
-  // 그리드 컨테이너 전환 효과
-  const gridContainer = document.querySelector('.grid-container');
-  if (gridContainer) {
-    gridContainer.classList.remove('active');
-    setTimeout(() => {
-      gridContainer.classList.add('active');
-    }, 50);
-  }
 }
 
 async function updateItemsList(category) {
@@ -499,9 +480,9 @@ async function updateItemsList(category) {
           console.log(`Processing section ${sectionIndex}:`, section);
           if (section.images && Array.isArray(section.images)) {
             console.log(`Section ${sectionIndex} images:`, section.images);
-            section.images.forEach(imageUrl => {
+            section.images.forEach((imageUrl, imageIndex) => {
               const gridItem = document.createElement('div');
-              gridItem.className = 'grid-item';
+              gridItem.className = 'grid-item fade-in';
               gridItem.innerHTML = `
                 <img src="${imageUrl}" alt="${item.name || item.title || 'Untitled'}">
                 <div class="title">${item.name || item.title || 'Untitled'}</div>
@@ -519,14 +500,19 @@ async function updateItemsList(category) {
               });
               
               gridContainer.appendChild(gridItem);
+              
+              // 각 아이템을 순차적으로 페이드인
+              setTimeout(() => {
+                gridItem.classList.add('active');
+              }, imageIndex * 100); // 각 아이템마다 100ms씩 지연
             });
           }
         });
       } else if (item.images && Array.isArray(item.images)) {
         // 단일 이미지 배열인 경우
-        item.images.forEach(imageUrl => {
+        item.images.forEach((imageUrl, imageIndex) => {
           const gridItem = document.createElement('div');
-          gridItem.className = 'grid-item';
+          gridItem.className = 'grid-item fade-in';
           gridItem.innerHTML = `
             <img src="${imageUrl}" alt="${item.name || item.title || 'Untitled'}">
             <div class="title">${item.name || item.title || 'Untitled'}</div>
@@ -544,11 +530,16 @@ async function updateItemsList(category) {
           });
           
           gridContainer.appendChild(gridItem);
+          
+          // 각 아이템을 순차적으로 페이드인
+          setTimeout(() => {
+            gridItem.classList.add('active');
+          }, imageIndex * 100); // 각 아이템마다 100ms씩 지연
         });
       } else {
         // 이미지가 없는 경우 메인 이미지 표시
         const gridItem = document.createElement('div');
-        gridItem.className = 'grid-item';
+        gridItem.className = 'grid-item fade-in';
         const imagePath = item.mainImage || './images/1.jpg';
         gridItem.innerHTML = `
           <img src="${imagePath}" alt="${item.name || item.title || 'Untitled'}">
@@ -567,6 +558,11 @@ async function updateItemsList(category) {
         });
         
         gridContainer.appendChild(gridItem);
+        
+        // 페이드인 효과 적용
+        setTimeout(() => {
+          gridItem.classList.add('active');
+        }, 100);
       }
     });
     ul.appendChild(li);
@@ -581,8 +577,6 @@ function updateGrid(items) {
     return;
   }
 
-  gridContainer.innerHTML = '';
-
   if (!items) {
     console.error('No items provided to updateGrid');
     return;
@@ -591,35 +585,45 @@ function updateGrid(items) {
   // items가 배열이 아닌 경우 배열로 변환
   const itemsArray = Array.isArray(items) ? items : [items];
 
-  itemsArray.forEach(item => {
-    console.log('Creating grid item:', item);
-    const gridItem = document.createElement('div');
-    gridItem.className = 'grid-item';
+  // 잠시 대기 후 내용 비우기
+  setTimeout(() => {
+    gridContainer.innerHTML = '';
 
-    const img = document.createElement('img');
-    // 이미지 경로 수정
-    const imagePath = item.mainImage ? item.mainImage : './images/1.jpg';
-    img.src = imagePath;
-    img.alt = item.name || '';
-    
-    // 이미지 로드 에러 처리
-    img.onerror = () => {
-      console.error('Failed to load image:', imagePath);
-      img.src = './images/1.jpg'; // 기본 이미지로 대체
-    };
+    itemsArray.forEach((item, index) => {
+      console.log('Creating grid item:', item);
+      const gridItem = document.createElement('div');
+      gridItem.className = 'grid-item fade-in';
 
-    gridItem.appendChild(img);
-    gridItem.addEventListener('click', () => {
-      console.log('Grid item clicked:', item);
-      if (!item.name) {
-        console.error('Item has no name:', item);
-        return;
-      }
-      window.location.href = `detail.html?id=${item.id || item.projectID}&source=list`;
+      const img = document.createElement('img');
+      // 이미지 경로 수정
+      const imagePath = item.mainImage ? item.mainImage : './images/1.jpg';
+      img.src = imagePath;
+      img.alt = item.name || '';
+      
+      // 이미지 로드 에러 처리
+      img.onerror = () => {
+        console.error('Failed to load image:', imagePath);
+        img.src = './images/1.jpg'; // 기본 이미지로 대체
+      };
+
+      gridItem.appendChild(img);
+      gridItem.addEventListener('click', () => {
+        console.log('Grid item clicked:', item);
+        if (!item.name) {
+          console.error('Item has no name:', item);
+          return;
+        }
+        window.location.href = `detail.html?id=${item.id || item.projectID}&source=list`;
+      });
+
+      gridContainer.appendChild(gridItem);
+      
+      // 각 아이템을 순차적으로 페이드인
+      setTimeout(() => {
+        gridItem.classList.add('active');
+      }, index * 100); // 각 아이템마다 100ms씩 지연
     });
-
-    gridContainer.appendChild(gridItem);
-  });
+  }, 300);
 }
 
 function navigateToDetail(item) {

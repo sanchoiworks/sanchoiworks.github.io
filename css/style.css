@@ -178,10 +178,6 @@ header {
   gap: 24px;
   margin-top: 57px;
   height: calc(100vh - 129px);
-  opacity: 0;
-  transition:
-    opacity 0.8s ease,
-    transform 0.8s ease;
   overflow-y: auto;
   align-items: start;
   align-content: start;
@@ -189,9 +185,14 @@ header {
   z-index: 1;
 }
 
-.grid-container.active {
+/* 페이드인 효과를 위한 클래스 */
+.fade-in {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.fade-in.active {
   opacity: 1;
-  transform: translateY(0);
 }
 
 .grid-container::-webkit-scrollbar {
