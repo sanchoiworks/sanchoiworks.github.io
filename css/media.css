@@ -4,6 +4,9 @@
   body {
     font-size: 15px;
     overflow-x: hidden;
+    /* 모바일 브라우저 UI 고려한 높이 설정 */
+    --vh: 1vh;
+    --mobile-height: calc(var(--vh, 1vh) * 100);
   }
 
   /* Header */
@@ -23,7 +26,7 @@
   .swiper {
     position: fixed;
     width: 100%;
-    height: 100vh;
+    height: var(--mobile-height, 100vh); /* 동적 높이 사용 */
     top: 0;
     left: 0;
     right: 0;
@@ -73,13 +76,13 @@
   .list-page .container {
     display: flex;
     flex-direction: row;
-    height: 100vh;
+    height: var(--mobile-height, 100vh); /* 동적 높이 사용 */
     gap: 0;
     padding: 0;
   }
   .list-page .list {
     width: 50%;
-    height: 100vh;
+    height: var(--mobile-height, 100vh); /* 동적 높이 사용 */
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -91,7 +94,7 @@
     width: 50%;
     height: auto;
     gap: 16px;
-    max-height: 100vh;
+    max-height: var(--mobile-height, 100vh); /* 동적 높이 사용 */
     margin-top: 0;
     padding: 0;
     grid-template-columns: repeat(2, 1fr);
@@ -196,6 +199,9 @@
   /* General */
   body {
     font-size: 12px;
+    /* 모바일 브라우저 UI 고려한 높이 설정 */
+    --vh: 1vh;
+    --mobile-height: calc(var(--vh, 1vh) * 100);
   }
 
   /* Header */
@@ -311,20 +317,20 @@
   .list-page {
     padding: 44px 16px;
     height: auto;
-    min-height: 100vh;
+    min-height: var(--mobile-height, 100vh); /* 동적 높이 사용 */
     overflow: visible;
     position: static;
   }
   .list-page .container {
     display: flex;
     flex-direction: row;
-    height: 100vh;
+    height: var(--mobile-height, 100vh); /* 동적 높이 사용 */
     gap: 0;
     padding: 0;
   }
   .list-page .list {
     width: 50%;
-    height: 100vh;
+    height: var(--mobile-height, 100vh); /* 동적 높이 사용 */
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -337,7 +343,7 @@
     width: 50%;
     height: auto;
     gap: 16px;
-    max-height: 100vh;
+    max-height: var(--mobile-height, 100vh); /* 동적 높이 사용 */
     margin-top: 0;
     padding: 0;
     grid-template-columns: 1fr;
