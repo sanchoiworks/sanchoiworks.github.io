@@ -7,6 +7,13 @@
     /* 모바일 브라우저 UI 고려한 높이 설정 */
     --vh: 1vh;
     --mobile-height: calc(var(--vh, 1vh) * 100);
+    /* 추가: 모바일에서 전체 높이 강제 설정 */
+    min-height: 100vh;
+    min-height: var(--mobile-height, 100vh);
+    /* 추가: iOS Safari에서 주소창 숨김/표시 대응 */
+    width: 100%;
+    height: 100vh;
+    height: var(--mobile-height, 100vh);
   }
 
   /* Header */
@@ -27,6 +34,8 @@
     position: fixed;
     width: 100%;
     height: var(--mobile-height, 100vh); /* 동적 높이 사용 */
+    min-height: var(--mobile-height, 100vh); /* 최소 높이 보장 */
+    max-height: var(--mobile-height, 100vh); /* 최대 높이 제한 */
     top: 0;
     left: 0;
     right: 0;
@@ -77,12 +86,14 @@
     display: flex;
     flex-direction: row;
     height: var(--mobile-height, 100vh); /* 동적 높이 사용 */
+    min-height: var(--mobile-height, 100vh); /* 최소 높이 보장 */
     gap: 0;
     padding: 0;
   }
   .list-page .list {
     width: 50%;
     height: var(--mobile-height, 100vh); /* 동적 높이 사용 */
+    min-height: var(--mobile-height, 100vh); /* 최소 높이 보장 */
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -325,12 +336,14 @@
     display: flex;
     flex-direction: row;
     height: var(--mobile-height, 100vh); /* 동적 높이 사용 */
+    min-height: var(--mobile-height, 100vh); /* 최소 높이 보장 */
     gap: 0;
     padding: 0;
   }
   .list-page .list {
     width: 50%;
     height: var(--mobile-height, 100vh); /* 동적 높이 사용 */
+    min-height: var(--mobile-height, 100vh); /* 최소 높이 보장 */
     overflow-y: auto;
     display: flex;
     flex-direction: column;
