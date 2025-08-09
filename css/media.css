@@ -165,6 +165,9 @@
     font-size: 15px;
     padding: 0;
     margin-top: 80px;
+    right: 16px;
+    bottom: 16px;
+    left: 16px;
   }
 
   /* About Page*/  
@@ -180,9 +183,6 @@
   /* Detail Container - align with date-tabs */
   .detail-container {
     position: fixed;
-    right: 36px;
-    bottom: 36px;
-    left: 36px;
     z-index: 2;
   }
 
@@ -359,11 +359,5 @@
     margin-bottom: 2px;
   }
 
-  /* Detail Container - align with date-tabs on small devices */
-  .detail-container {
-    right: 16px;
-    bottom: 16px;
-    left: 16px;
-  }
 }
 
