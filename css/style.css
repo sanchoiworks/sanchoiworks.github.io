@@ -1,18 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500&display=swap');
+
 @font-face {
   font-family: 'Mercure';
   src: url('../fonts/Mercure_regular.woff') format('woff');
   font-weight: normal;
   font-style: normal;
 }
-
-@font-face {
-  font-family: 'Noto Serif KR';
-  src: url('../fonts/NotoSerifKR-VariableFont_wght.ttf') format('truetype');
-  font-weight: 500;
-  font-style: normal;
-}
-
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500&display=swap');
 
 * {
   margin: 0;
