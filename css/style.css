@@ -475,6 +475,11 @@ html {
   height: 100vh;
   padding: 36px;
   cursor: pointer;
+  /* 사파리와 크롬 호환성을 위한 웹킷 프리픽스 */
+  display: flex;
+  flex-direction: column;
+  -webkit-display: flex;
+  -webkit-flex-direction: column;
 }
 #detail-text-modal .modal-text {
   height: 100%;
@@ -485,6 +490,9 @@ html {
   line-height: 1.75;
   text-align: left;
   padding: 0 30vw;
+  /* 사파리와 크롬 호환성을 위한 웹킷 프리픽스 */
+  -webkit-display: flex;
+  -webkit-align-items: center;
 }
 #detail-text-modal .close-modal {
   font-size: 14.5px;

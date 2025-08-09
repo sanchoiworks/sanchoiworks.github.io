@@ -112,7 +112,10 @@
     display: flex;
     align-items: center;
     white-space: nowrap;
-    height: 20px;
+    height: 24px;
+    line-height: 1.2;
+    /* 디샌더/어샌더를 위한 여백 확보 */
+    padding: 2px 0;
   }
 
   .side-nav li a {
@@ -149,10 +152,12 @@
 
   .swiper-slide img {
     max-width: 100%;
-    max-height: 70vh;
+    max-height: 65vh;
     width: auto;
     height: auto;
     object-fit: contain;
+    /* 이미지가 info-left를 가리지 않도록 여백 확보 */
+    margin-bottom: 10px;
   }
 
   /* Detail Page */
@@ -216,6 +221,11 @@
 
   #detail-text-modal .modal-content{
     padding: 15px;
+    /* 사파리와 크롬 호환성을 위한 추가 설정 */
+    display: flex;
+    flex-direction: column;
+    -webkit-display: flex;
+    -webkit-flex-direction: column;
   }
 
   #detail-text-modal .modal-text {
@@ -224,6 +234,12 @@
     margin-top: 28px;
     padding: 0;
     align-items: flex-start;
+    /* 사파리와 크롬 호환성을 위한 추가 설정 */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    -webkit-align-items: flex-start;
+    -webkit-justify-content: flex-start;
   }
   #detail-text-modal .close-modal {
     font-size: 12px;
@@ -252,12 +268,19 @@
   }
 
   .side-nav li {
-    height: 18px;
+    height: 22px;
+    line-height: 1.2;
+    /* 디샌더/어샌더를 위한 여백 확보 */
+    padding: 2px 0;
   }
 
   /* Main Page */
   .swiper-slide {
     padding: 0 16px;
+    /* 이미지와 info-left 사이의 여백 확보 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   /* Detail Page */
