@@ -1,4 +1,5 @@
 import { loadCategoriesData, loadMainData, loadProjectsData } from './data.js';
+import { createSwiper } from './swiper-loader.js';
 
 let swiper = null;
 let projectItem = null;
@@ -110,7 +111,7 @@ async function initializeSwiper(sections) {
     const totalSlides = allImages.length;
 
     // Swiper 초기화
-    swiper = new Swiper('.detail-swiper', {
+    swiper = await createSwiper('.detail-swiper', {
         slidesPerView: 1,
         spaceBetween: 0,
         loop: true,

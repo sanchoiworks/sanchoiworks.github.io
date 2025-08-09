@@ -1,4 +1,5 @@
 import { loadMainData } from './data.js';
+import { createSwiper } from './swiper-loader.js';
 
 async function initializeMainPage() {
   try {
@@ -36,7 +37,7 @@ async function initializeMainPage() {
       .join('');
 
     // Swiper 초기화
-    const swiper = new Swiper('.swiper', {
+    const swiper = await createSwiper('.swiper', {
       direction: 'vertical',
       mousewheel: {
         sensitivity: 1.5,
@@ -100,7 +101,7 @@ function updateSideNav(index) {
 }
 
 // 상세 페이지 표시 함수
-function showDetailPage(projectData) {
+async function showDetailPage(projectData) {
   const detailPage = document.querySelector('.detail-page');
   const detailSwiper = detailPage.querySelector('.swiper-wrapper');
 
@@ -126,7 +127,7 @@ function showDetailPage(projectData) {
   detailPage.style.display = 'flex';
 
   // 상세 페이지 스와이퍼 초기화
-  new Swiper('.detail-swiper', {
+  await createSwiper('.detail-swiper', {
     slidesPerView: 1,
     spaceBetween: 0,
     navigation: {
