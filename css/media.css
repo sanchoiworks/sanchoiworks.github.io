@@ -198,9 +198,6 @@
   /* General */
   body {
     font-size: 12px;
-    /* 모바일 브라우저 UI 고려한 높이 설정 */
-    --vh: 1vh;
-    --mobile-height: calc(var(--vh, 1vh) * 100);
   }
 
   /* Header */
@@ -344,7 +341,7 @@
     gap: 16px;
     max-height: var(--mobile-height, 100vh); /* 동적 높이 사용 */
     margin-top: 0;
-    padding: 0;
+    padding: 0 0 60px 0; /* 하단 패딩 증가로 마지막 이미지가 잘리지 않도록 */
     grid-template-columns: 1fr;
     overflow-y: auto;
   }
