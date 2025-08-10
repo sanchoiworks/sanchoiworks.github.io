@@ -240,6 +240,7 @@
 
 
   #detail-text-modal .modal-content{
+    height: 100dvh;
     padding: 15px;
     /* 사파리와 크롬 호환성을 위한 추가 설정 */
     display: flex;
