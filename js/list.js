@@ -4,6 +4,20 @@ let categories = [];
 let currentCategoryIndex = 0;
 let isScrolling = false;
 let scrollTimeout;
+// DOM 요소 캐싱
+let cachedElements = {};
+
+// DOM 요소 캐싱 함수
+function cacheElements() {
+  cachedElements = {
+    categoryMenu: document.querySelector('.category-menu'),
+    itemsList: document.querySelector('.items-list'),
+    gridContainer: document.querySelector('.grid-container'),
+    container: document.querySelector('.list-page .container'),
+    listDiv: document.querySelector('.list'),
+    gridControl: document.querySelector('.grid-control')
+  };
+}
 
 async function loadCategories() {
   try {
