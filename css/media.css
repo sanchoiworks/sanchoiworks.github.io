@@ -41,7 +41,7 @@
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: 80px 20px 20px 20px !important;
+    padding: 0 20px !important;
   }
 
   .swiper-slide img {
@@ -221,7 +221,7 @@
 
   /* Main Page */
   .swiper-slide {
-    padding: 60px 16px 20px 16px !important;
+    padding: 0 16px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
